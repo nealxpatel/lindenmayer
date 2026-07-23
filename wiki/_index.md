@@ -1,10 +1,10 @@
 ---
 name: l_system
-desc: ...
+desc: Lindenmayer shared node documentation and references.
 tags: []
 sources: []
 created: 2026-07-23T12:40:09Z
-updated: 2026-07-23T19:24:50Z
+updated: 2026-07-23T20:24:17Z
 ---
 
 # l_system
@@ -15,4 +15,4 @@ updated: 2026-07-23T19:24:50Z
 
 [[node_operations|node_operations]]: Repo-specific fractal operating quirks every node hits (scope, transcripts, spawning).
 
-***
+[[registry_implementation|registry_implementation]]: Template registry for publishing, reading, and validating template versions as Nostr events.

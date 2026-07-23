@@ -21,8 +21,9 @@ the tree's own telemetry is the demo data.
 - Aggregates flow up, details stay in the subgraph (privacy is a default, not a
   feature).
 - No new storage systems — the signed event log is the history; source-of-truth
-  data stays in Fractal's SQLite and the Buzz relay, with parquet snapshot exports
-  in `data/` for local review via duckdb.
+  data stays in Fractal's SQLite and the signed event log on the Lindenmayer
+  relay (Buzz is the human surface, not the core-log carrier), with parquet
+  snapshot exports in `data/` for local review via duckdb.
 
 ## Repo notes
 
