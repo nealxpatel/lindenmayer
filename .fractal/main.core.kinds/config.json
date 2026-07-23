@@ -7,7 +7,7 @@
   "meta": null,
   "agent": "claude",
   "provider": null,
-  "model": "sonnet",
+  "model": "haiku",
   "effort": null,
   "max_iters": 8,
   "max_depth": 0,

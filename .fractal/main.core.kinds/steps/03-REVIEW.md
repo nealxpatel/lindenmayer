@@ -1,5 +1,6 @@
 ---
 requires_approval: false
+model: fable
 ---
 
 ## Review
