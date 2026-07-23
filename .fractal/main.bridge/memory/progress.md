@@ -1,33 +1,34 @@
 ---
 name: progress
-title: Bridge Node - CLI Implementation Complete
-desc: ...
+title: Bridge Node - Recovery Complete, Green
+desc: Split-brain recovery from accidental main commits
 tags: []
 sources: []
 created: 2026-07-23T19:24:50Z
-updated: 2026-07-23T20:15:00Z
+updated: 2026-07-23T20:28:35Z
 ---
 
-# Bridge Node - CLI Implementation Complete
+# Bridge Node - Recovery Complete
 
-Iteration 1 (SYNC): Fixed two defects from root work order (E032B74B).
+Iteration 1 (SYNC → PREPARE): Recovered split-brain commits from main branch.
 
-All five deliverables fully implemented and tested. Test suite: 210 passing.
+All five deliverables fully implemented and tested. Test suite: 211 passing.
 
-## Defects Fixed
+## Recovery Applied
 
-1. **Undeclared dependency removed**: Replaced `click` with stdlib `argparse`. No new dependencies added (pyproject.toml validated).
+Root work order (296F6D0C): Cherry-picked three commits from main back onto main.bridge.
 
-2. **CLI wiring completed**: `_bridge_main()` now implements the full pipeline:
-   - FractalDBReader: Load Fractal tree DB (nodes, runs)
-   - Translation layer: Node lifecycle (42010) + run accounting (42020) per node
-   - Identity gate: `load_node_keypair()` per node, `refuse_if_revoked()` check
-   - Publisher: Relay-cursor resume, idempotent replay, deterministic event IDs
+1. **Seam completed** (adapters/sqlite.py): `get_node_lifecycle_rows()` returns joined node-run rows with TEXT run_id (CAST applied), filtered to finished runs only. Cleaned up redundant LEFT JOIN logic.
 
-3. **E2E test extended**: `test_cli_invocation_produces_expected_events()` invokes CLI directly:
-   - Mocks `load_node_keypair()` to return test keypair for all nodes
-   - Verifies CLI produces identical event stream to component test (same IDs, order, no duplicates)
-   - Acceptance criteria: CLI entry point fully functional
+2. **CLI fixed** (bridge/cli.py): 
+   - Removed zero-key placeholder; now loads relay auth keypair via `config.load_keypair()`
+   - Imported `load_node_keypair` and `refuse_if_revoked` at module level (test patchability)
+   - Per-node keys remain separate (identity.load_node_keypair)
+
+3. **Test updated** (test_bridge_e2e.py):
+   - `test_event_stream_shape()` now expects lifecycle events for nodes with finished runs only (7, not 8; main.bridge is active)
+   - Added mock for CoreConfig.load_keypair in CLI test (patch on class, not instance)
+   - All 211 tests now green
 
 ## Deliverables (Unchanged)
 
