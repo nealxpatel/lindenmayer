@@ -4,11 +4,13 @@
 > in git until `registry` exists to hold it as signed events. Instantiate per
 > `README.md` in this directory; replace every `<ANGLE>` placeholder.
 
-- **branch:** `main.<name>`
-- **parent:** `main` (root / user node)
+- **branch:** `<PARENT-BRANCH>.<name>` (first ply: `main.<name>`)
+- **parent:** `<PARENT-BRANCH>` (first ply: `main`, the root / user node)
 - **scope:** `<SCOPE>` (directory-granular; commits outside are rejected)
-- **template:** dev-node v1 (this file); instances record this line verbatim
-  so instance → template-version linkage exists from day one.
+- **template:** `dev-node v1 @ <TEMPLATE-PIN-SHA>` — the template's commit
+  pin, recorded verbatim in instances: a future 42050 template-version event
+  needs name/version/git_ref, and without the pin the ref is recoverable
+  only by archaeology (architect condition, verdict AF477673 run).
 
 ## Instructions
 
@@ -39,8 +41,9 @@ cover children + spawn ceremony + one integration iteration.
 ### Model policy (tree standard)
 
 You and your children run **haiku**; every REVIEW step is pinned to
-**fable** via step frontmatter (`model: fable`) — verify this on each child
-you spawn. The quality contract is precise work orders plus fable review,
+**fable** via step frontmatter (`model: fable`). The pin on a child is
+applied by YOU, the spawning parent, before starting it — a child cannot
+edit its own immutable seed — then verified after spawn. The quality contract is precise work orders plus fable review,
 not frontier generation. Work orders to children are numbered, one decision
 per item, with acceptance evidence named.
 

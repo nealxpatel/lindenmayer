@@ -1,0 +1,6 @@
+{"type":"text","role":"user","content":"Setup fixture run 2","index":0}
+{"type":"text","role":"assistant","content":"Response for run 2","index":1}
+{"type":"cost","model":"claude-haiku-4-5-20251001","usage":{"input_tokens":200,"output_tokens":100,"cache_creation_input_tokens":0,"cache_read_input_tokens":0},"index":2}
+{"type":"text","role":"user","content":"Another request","index":3}
+{"type":"text","role":"assistant","content":"Final response","index":4}
+{"type":"cost","model":"claude-haiku-4-5-20251001","usage":{"input_tokens":250,"output_tokens":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0},"index":5}

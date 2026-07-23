@@ -62,6 +62,14 @@ windows, and frontier burn on mechanical work exhausts them (observed
   contract is precise instructions plus Fable review, not frontier
   generation.
 
+## Merge hygiene
+
+Squash-merging a node branch can regress files the node never edited
+(repeated squash merges lose the merge-base; observed twice on 2026-07-23).
+After every `fractal node merge`, diff the merge commit against pre-merge
+`main` and restore any path outside the node's legitimate write surfaces
+before pushing.
+
 ## Consultation covenant
 
 `docs/DESIGN.md` is the platform manifest and is owned by
