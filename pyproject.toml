@@ -4,7 +4,22 @@ version = "0.1.0"
 description = "Control plane for governing Fractal agent subgraphs through Buzz"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    # Justified in the core node's plan (core_foundation):
+    # coincurve — BIP-340 Schnorr over libsecp256k1 (the reference C implementation);
+    #   the trust root must not ride a pure-Python curve implementation.
+    "coincurve>=20.0",
+    # pydantic — typed kind models with validation (accept/reject surface).
+    "pydantic>=2.7",
+    # websockets — mature asyncio WebSocket client for the relay client.
+    "websockets>=13.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
 
 [build-system]
 requires = ["hatchling"]
