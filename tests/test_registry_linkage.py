@@ -90,6 +90,57 @@ class TestExtractFromNodeMd:
             validator.extract_from_node_md(node_file)
 
 
+class TestRealTreeContracts:
+    """Linkage validation against the real instance contracts in tree/.
+
+    The charter's acceptance evidence: bridge and registry both carry the
+    line `template: dev-node v1 @ 9f147a3` in their versioned contracts.
+    """
+
+    TREE = Path(__file__).parent.parent / "tree"
+
+    @pytest.mark.parametrize("contract", ["registry", "bridge"])
+    def test_extract_from_real_contract(self, contract: str):
+        """Extract the real pin from each tree/ contract that carries it."""
+        node_md = self.TREE / contract / "NODE.md"
+        assert node_md.exists(), f"expected real contract at {node_md}"
+
+        validator = LinkageValidator()
+        linkage = validator.extract_from_node_md(node_md)
+
+        assert linkage.name == "dev-node"
+        assert linkage.version == "1"
+        assert linkage.sha == "9f147a3"
+        assert linkage.instance_path == node_md
+
+    def test_registry_contract_prose_mention_skipped(self):
+        """registry's NODE.md also quotes the linkage format in prose;
+        extraction must land on the real pin line, not crash on the quote."""
+        node_md = self.TREE / "registry" / "NODE.md"
+        content = node_md.read_text()
+        # Precondition: the prose mention exists (the format quote).
+        assert "`template: <name> v<N> @ <sha>`" in content
+
+        validator = LinkageValidator()
+        linkage = validator.extract_from_node_md(node_md)
+        assert linkage.sha == "9f147a3"
+
+    def test_real_pin_resolves_against_registered_version(self):
+        """The real contracts' pin resolves to a published dev-node version
+        and validates against its git_ref — the instance → template-version
+        association, terminating at the 42050 event id."""
+        validator = LinkageValidator()
+        linkage = validator.extract_from_node_md(self.TREE / "registry" / "NODE.md")
+
+        versions = [
+            {"name": "dev-node", "version": "1", "event_id": "a" * 64, "git_ref": "9f147a3"},
+        ]
+        event_id = validator.resolve_linkage(linkage, versions)
+        assert event_id == "a" * 64
+
+        assert validator.validate_against_version(linkage, event_id, "9f147a3") is True
+
+
 class TestValidateAgainstVersion:
     """Test linkage validation against version event."""
 

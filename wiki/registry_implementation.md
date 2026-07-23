@@ -1,7 +1,7 @@
 ---
 name: registry_implementation
 title: Registry Implementation
-desc: ...
+desc: Template registry for publishing, reading, and validating template versions as Nostr events.
 tags: []
 sources: []
 created: 2026-07-23T20:37:35Z
@@ -21,6 +21,7 @@ Implemented the Lindenmayer template registry — a system for publishing, readi
 Reads a template directory, derives name/version/git_ref from content and commit pin, and emits 42050 + 38150 events.
 
 **Features:**
+
 - `extract_template_info()` — Parse template directory for name, version, git_ref
 - `build_version_event()` — Create kind 42050 template-version event
 - `build_pointer_event()` — Create kind 38150 template-pointer event
@@ -34,6 +35,7 @@ Reads a template directory, derives name/version/git_ref from content and commit
 Query relay for 42050/38150 events by author and template name; reconstruct version history with verification.
 
 **Features:**
+
 - `get_version_history()` — Fetch and order versions by version tag (not created_at)
 - `get_current_pointer()` — Fetch addressable pointer to current version
 - Full NIP-01 signature verification via `Event.verify()`
@@ -48,6 +50,7 @@ Query relay for 42050/38150 events by author and template name; reconstruct vers
 Parse and validate instance contract template linkage lines.
 
 **Features:**
+
 - `parse_template_linkage_line()` — Parse `template: <name> v<N> @ <sha>` format
 - Handles markdown, backticks, extra whitespace variations
 - `extract_from_node_md()` — Find linkage line in NODE.md file
@@ -55,18 +58,20 @@ Parse and validate instance contract template linkage lines.
 - `resolve_linkage()` — Look up version event id from version list
 - READ-SIDE ONLY: no new event kinds, no wire-visible artifacts
 
-**Tests:** 9 tests covering parsing, extraction, validation, resolution
+**Tests:** 13 tests covering parsing, extraction, validation, resolution, and the real tree/ contracts (bridge and registry both pin dev-node v1 @ 9f147a3)
 
 ### 4. CLI (`src/lindenmayer/registry/cli.py`)
 
 Command-line interface for template operations.
 
 **Commands:**
+
 - `lindenmayer-registry publish <template_dir>` — Publish template version to relay
 - `lindenmayer-registry list <author>` — List all templates from an author
 - `lindenmayer-registry show <author> <name>` — Show version history for a template
 
 **Features:**
+
 - Uses stdlib argparse (no external deps like click)
 - Async relay operations via core's RelayClient
 - Generate or load keypairs for signing
@@ -79,12 +84,12 @@ End-to-end integration test: register dev-node v1 @ 9f147a3 against mock relay a
 
 ## Test Results
 
-- **Total tests:** 239 passing
-- **Registry-specific:** 29 tests across 4 test files
+- **Total tests:** 243 passing
+- **Registry-specific:** 33 tests across 4 test files
 - **Test categories:**
   - Publisher goldens: 9 tests (idempotency assertion on event ids)
   - Reader round-trips: 10 tests (tampered-event rejection, inheritance)
-  - Linkage validation: 9 tests (format variations, real tree/ contracts)
+  - Linkage validation: 13 tests (format variations, real tree/registry and tree/bridge contracts)
   - E2E dogfood: 3 tests (dev-node v1 registration and playback)
 
 ## Fixtures

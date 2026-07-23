@@ -1,7 +1,7 @@
 ---
 name: registry_state
 title: Registry Node State
-desc: ...
+desc: Terminal state of the registry node -- deliverables shipped, test results, code locations.
 tags: []
 sources: []
 created: 2026-07-23T20:37:35Z
@@ -30,8 +30,9 @@ updated: 2026-07-23T20:37:35Z
    
 3. ✅ Linkage (src/lindenmayer/registry/linkage.py)
    - Parse template linkage lines (template: name vN @ sha)
-   - Extract from NODE.md files
+   - Extract from NODE.md files (skips prose mentions of the format)
    - Validate against version events
+   - Tested against the REAL tree/registry and tree/bridge contracts (pin 9f147a3)
    - READ-SIDE ONLY per condition 1
    
 4. ✅ CLI (src/lindenmayer/registry/cli.py)
@@ -46,8 +47,8 @@ updated: 2026-07-23T20:37:35Z
 
 ### Test Results
 
-- 239 total tests passing (all existing + 29 new registry tests)
-- Categories: publisher (9), reader (10), linkage (9), E2E (3)
+- 243 total tests passing (all existing + 33 registry tests)
+- Categories: publisher (9), reader (10), linkage (13, incl. real tree/ contracts), E2E (3)
 - All acceptance criteria met
 
 ### Fixtures
@@ -78,10 +79,3 @@ updated: 2026-07-23T20:37:35Z
 - CLI: src/lindenmayer/registry/cli.py
 - Tests: tests/test_registry_*.py
 - Wiki: wiki/registry_implementation.md
-
-### Next Steps (if needed)
-
-- E2E registration of dev-node v1 live (against real relay)
-- CLI integration into main lindenmayer commands
-- Version history UI/report generation
-- Eval attachment to version events (§8 pillar, future work)

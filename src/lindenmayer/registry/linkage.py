@@ -87,9 +87,15 @@ class LinkageValidator:
         except Exception as e:
             raise LinkageError(f"cannot read {node_md_path}: {e}") from e
 
+        # Real contracts may mention "template:" in prose (e.g. when quoting
+        # the linkage format itself); skip lines that don't parse and take
+        # the first that does.
         for line in content.split("\n"):
             if "template:" in line:
-                linkage = parse_template_linkage_line(line)
+                try:
+                    linkage = parse_template_linkage_line(line)
+                except LinkageError:
+                    continue
                 linkage.instance_path = node_md_path
                 return linkage
 

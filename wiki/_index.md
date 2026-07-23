@@ -1,6 +1,6 @@
 ---
 name: l_system
-desc: Lindenmayer platform wiki — platform design, node implementations, operating procedures
+desc: Lindenmayer platform wiki — platform design, node implementations, operating procedures.
 tags: []
 sources: []
 created: 2026-07-23T12:40:09Z
