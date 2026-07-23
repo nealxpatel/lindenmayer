@@ -5,7 +5,6 @@ WAL-safe, never writes.
 """
 
 import sqlite3
-from pathlib import Path
 
 
 class FractalDBReader:

@@ -1,6 +1,6 @@
 ---
 name: deliverable1
-desc: Implementation of FractalDBReader and TranscriptUsageHarvester
+desc: Implementation of FractalDBReader and TranscriptUsageHarvester.
 tags: [delivered, adapters, sqlite, transcripts]
 sources: []
 created: 2026-07-23T19:06:51Z
