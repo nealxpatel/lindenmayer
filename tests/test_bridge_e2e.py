@@ -174,3 +174,55 @@ async def test_dogfood_bridge_to_mock_relay(keypair):
             assert set(relay_ids) == {e.id for e in events}, "gaps in relayed stream"
         finally:
             await client.close()
+
+
+@pytest.mark.asyncio
+async def test_cli_invocation_produces_expected_events(keypair, tmp_path):
+    """CLI entry point: invoke with fixture tree and mock relay, verify event stream.
+
+    Acceptance test for deliverable 5: the CLI must wire the full pipeline and produce
+    the same event stream as the component-level E2E test.
+    """
+    import shutil
+    from unittest.mock import patch
+
+    from lindenmayer.bridge.cli import _bridge_main
+
+    # Set up temp directory structure matching what CLI expects:
+    # tree_path/.fractal/main/.db
+    fixture_db = FIXTURE_DB
+    tree_path = tmp_path
+    fractal_dir = tree_path / ".fractal" / "main"
+    fractal_dir.mkdir(parents=True)
+    temp_db = fractal_dir / ".db"
+    shutil.copy(fixture_db, temp_db)
+
+    expected_events = _build_event_stream(keypair)
+    assert len(expected_events) > 0
+
+    # Mock load_node_keypair to return the test keypair for all nodes
+    # (ensures CLI generates the same events as the component test)
+    def mock_load_node_keypair(node_name: str):
+        return keypair if node_name else None
+
+    async with MockRelay() as relay:
+        config = CoreConfig(relay_url=relay.url)
+
+        # Patch the identity module's load_node_keypair
+        with patch("lindenmayer.bridge.identity.load_node_keypair", side_effect=mock_load_node_keypair):
+            # Also patch the import inside _bridge_main
+            with patch("lindenmayer.bridge.cli.load_node_keypair", side_effect=mock_load_node_keypair):
+                # Invoke CLI's main bridge function directly (tests the wired pipeline)
+                await _bridge_main(
+                    tree_path=tree_path,
+                    db_path=temp_db,
+                    relay_url=relay.url,
+                    config=config,
+                    once=True,  # single-pass mode
+                )
+
+        # Verify the relay has exactly the expected stream
+        relay_ids = sorted([e["id"] for e in relay.events])
+        expected_ids = sorted([e.id for e in expected_events])
+        assert relay_ids == expected_ids, "CLI produced unexpected event stream"
+        assert len(relay_ids) == len(set(relay_ids)), "CLI produced duplicate events"
