@@ -33,12 +33,19 @@ Deliverables, in `src/lindenmayer/registry/`:
 2. **Template reader.** Query a relay for 42050/38150 by author and
    template name, reconstruct the full version history, and verify
    signatures and author attestation via core's verification module (§6.5:
-   never trust the relay's word for any of it). Acceptance: round-trip
+   never trust the relay's word for any of it). Order version history by
+   the `version` tag, treating `created_at` as informational — git commit
+   timestamps are not guaranteed monotonic (condition 2, registry
+   countersign; interpretive ruling in the decision log). Acceptance: round-trip
    tests against a mock relay, including a tampered-event rejection case.
 3. **Instance linkage.** Parse instance contracts' template linkage lines
    (`template: <name> v<N> @ <sha>`), validate that the pin resolves and
    matches a registered version, and expose the instance → template-version
-   association for future eval attachment. Acceptance: linkage tests
+   association for future eval attachment. READ-SIDE ONLY, terminating at
+   the 42050 version event id: no new event kinds, no wire-visible
+   association artifacts, no eval-shaped schema — anything wire-visible for
+   evals belongs to the open §8 pillar and is automatically an architect
+   consultation (condition 1, registry countersign). Acceptance: linkage tests
    against the real contracts in `tree/` (bridge and registry itself carry
    the line).
 4. **CLI.** `lindenmayer-registry publish|list|show` configured via core's
