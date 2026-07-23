@@ -4,10 +4,10 @@ desc: Iteration status and progress
 tags: [translation, identity, bridge]
 sources: []
 created: 2026-07-23T19:06:53Z
-updated: 2026-07-23T19:06:53Z
+updated: 2026-07-23T19:16:16Z
 ---
 
-# Translation Layer & Identity — Iteration 1
+# STATUS
 
 ## Task
 Implement Deliverable 2 (translation functions) and Deliverable 3 (identity + NIP-OA attestation).
