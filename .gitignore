@@ -13,3 +13,4 @@ build/
 # Local tooling
 .claude/settings.local.json
 .DS_Store
+transcripts/
