@@ -102,3 +102,16 @@ updated: 2026-07-23T13:00:07Z
   is applied by the spawning parent. §3 notes the first live instance. Root
   instantiates the bridge node from this template after applying the
   condition.
+
+## Bridge commissioning (first ply)
+
+- `tree/bridge/NODE.md` (pinned ff957ad, first dev-node-template instantiation,
+  linkage `dev-node v1 @ 9f147a3` — post-condition pin verified) countersigned
+  **approve-with-conditions** (root request 9B395019, verdict reply 8266A685;
+  decision-log row in §9; §3 pin cite refreshed 9574393→9f147a3 and first
+  instantiation noted). Relay-as-cursor stateless resume APPROVED under §6.2.
+  Conditions for root to apply: (1) restore contract-disagreement clause to
+  Instructions; (2) deterministic event ids (content+created_at from Fractal
+  source rows; replay tests assert on ids); (3) harvester isolated behind an
+  adapter reading only append-only usage fields (contains §8 compaction
+  coupling). Bridge starts on root's go after applying conditions.
