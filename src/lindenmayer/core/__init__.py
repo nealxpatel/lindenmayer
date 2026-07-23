@@ -23,17 +23,54 @@ from lindenmayer.core.event import (
     compute_event_id,
 )
 from lindenmayer.core.keys import Keypair, schnorr_sign, schnorr_verify
+from lindenmayer.core.kinds import KIND_REGISTRY, KindModel, KindValidationError, parse_event
+from lindenmayer.core.relay import (
+    PrivateCapabilityError,
+    RelayClient,
+    RelayError,
+    RelayRejection,
+)
+from lindenmayer.core.verify import (
+    ApprovalCounts,
+    AttestationLabel,
+    AttestationOutcome,
+    AttestationResult,
+    AttestationState,
+    attestation_state,
+    count_approvals,
+    filter_attested,
+    is_approved,
+    validate_attestation,
+)
 
 __all__ = [
     "CAP_PRIVATE_READ_GATING",
+    "ApprovalCounts",
+    "AttestationLabel",
+    "AttestationOutcome",
+    "AttestationResult",
+    "AttestationState",
     "CapabilityAttestation",
     "ConfigError",
     "CoreConfig",
     "Event",
     "EventValidationError",
+    "KIND_REGISTRY",
     "Keypair",
+    "KindModel",
+    "KindValidationError",
+    "PrivateCapabilityError",
+    "RelayClient",
+    "RelayError",
+    "RelayRejection",
+    "attestation_state",
     "canonical_serialization",
     "compute_event_id",
+    "count_approvals",
+    "filter_attested",
+    "is_approved",
+    "parse_event",
     "schnorr_sign",
     "schnorr_verify",
+    "validate_attestation",
 ]

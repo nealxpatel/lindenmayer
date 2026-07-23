@@ -49,3 +49,17 @@ merge commits invisible. Not data loss: verify with
 - `fractal commit` takes the message positionally (no `-m`).
 - `fractal radio reply` takes no `--subject` (inherits the parent
   message's).
+
+## Python environment: worktree venvs on 3.13, not the shared 3.14 venv
+
+The shared repo venv (`/Users/nealpatel/Code/l-system/.venv`) is Python
+3.14, but `coincurve` (the secp256k1 dependency of `lindenmayer.core`)
+ships no cp314 wheels and fails to build from source. Nodes that run the
+test suite or add Python deps should use a worktree-local venv on 3.13:
+`UV_PYTHON=3.13 uv sync --inexact` (setup.sh) and
+`UV_PYTHON=3.13 uv run --inexact pytest tests/ -q` (test.sh). Always pass
+`--inexact` — a bare `uv sync` strips packages other nodes installed.
+Never rebuild or repoint the shared `.venv`; siblings depend on it.
+`pyproject.toml`/`uv.lock` live at the repo root, outside every scoped
+node's commit scope — dependency changes need
+`fractal commit --ignore-scope`.
