@@ -4,7 +4,7 @@ desc: ...
 tags: []
 sources: []
 created: 2026-07-23T12:40:09Z
-updated: 2026-07-23T19:24:50Z
+updated: 2026-07-23T20:37:35Z
 ---
 
 # l_system
@@ -14,5 +14,7 @@ updated: 2026-07-23T19:24:50Z
 [[fractal_read_adapters|fractal_read_adapters]]: Read-only adapters for accessing Fractal's SQLite database and transcript files
 
 [[node_operations|node_operations]]: Repo-specific fractal operating quirks every node hits (scope, transcripts, spawning).
+
+[[registry_implementation|registry_implementation]]: ...
 
 ***
