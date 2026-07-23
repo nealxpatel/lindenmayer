@@ -7,4 +7,4 @@ set -euo pipefail
 # No-op by default; extend per node with the project's test command.
 
 cd "$(dirname "$0")/../../.."
-rtk proxy python -m pytest tests/ -q
+uv run --project . python -m pytest tests/ -q
