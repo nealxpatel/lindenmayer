@@ -24,20 +24,42 @@ through Buzz.
   observability hooks, the per-tree SQLite DB, and JSON/CSV CLI outputs as
   read surfaces; steers only through Fractal's own contracts (radio, signals,
   step files, config). Never patches or forks Fractal.
-- Translates Fractal telemetry and radio into signed Buzz events as custom
-  Nostr kinds, following Buzz's "new feature = new kind number" idiom and its
-  NIP-AM / NIP-AO metric drafts.
-- Maps tree structure onto Buzz primitives: Fractal nodes are git branches →
-  Buzz's "branch as room" binds subgraphs to channels; channel membership is
+- **Nostr-first output layering.** The primary integration target is the
+  Nostr protocol, not Buzz per se. The bridge's output is two layers:
+  - **Nostr core** — signed events any compliant relay can store and any
+    standard Nostr client can read: standard NIPs where they fit (NIP-01
+    wire format, NIP-29 group channels, NIP-34 git events), plus
+    Lindenmayer's own custom kinds, self-documented for portability.
+    Telemetry, radio aggregates, approval events, and template registration
+    live here.
+  - **Buzz layer** — Buzz-specific conveniences and relay-side behavior:
+    the preferred human surface (desktop app, inboxes, agent directory),
+    branch-as-room channel binding, buzz-protect merge enforcement. Losing
+    this layer degrades experience, never history.
+- **Draft-dependency rule.** The core may depend on a Buzz NIP draft only in
+  its schema-on-the-wire aspect — signed events with a documented kind that
+  any relay stores and any client can verify (NIP-OA attestation events
+  qualify). Any dependency on Buzz relay-side enforcement or behavior is
+  Buzz-layer. Where core kinds align with drafts (NIP-AM / NIP-AO metrics),
+  the schemas are restated in Lindenmayer's own kind documentation so they
+  survive draft churn.
+- Maps tree structure onto channels: Fractal nodes are git branches →
+  subgraphs bind to NIP-29 group channels ("branch as room" is the
+  Buzz-layer binding of the same idea to hosted git); channel membership is
   the only access gate.
 - Node identity via NIP-OA owner attestation: each node's keypair is attested
-  by its responsible human; revoking the human revokes the subgraph.
-- Fractal `requires_approval` steps surface as signed Buzz approval events.
+  by its responsible human. The attestation chain is core (verifiable
+  anywhere); relay-enforced instant revocation — remove the human, the
+  subgraph loses access — is Buzz-layer (see §2).
+- Fractal `requires_approval` steps surface as signed approval events (core);
+  enforcement of approval-gated merges via buzz-protect is Buzz-layer.
 
 ## 2. Identity (persistent nodes)
 
-Fractal provides the graphs and subgraphs; connecting a node to Buzz is what
-gives it an identity (an npub, attested per NIP-OA). Not all nodes need one —
+Fractal provides the graphs and subgraphs; connecting a node to the relay is
+what gives it an identity (an npub, attested per NIP-OA — attestation events
+are core per §1's layering; a plain relay keeps the chain verifiable, while
+instant enforcement of revocation is Buzz-layer). Not all nodes need one —
 only the persistent nodes central to executing work. Conceptually, persistent
 nodes are like the "sub-agents" of coding harnesses: named, durable roles with
 track records. Ephemeral worker nodes stay anonymous inside their subgraph;
@@ -49,7 +71,7 @@ signs.
 The unit of improvement is the **Node Template**, not the node instance. A
 template contains system prompts, skills, files, and references, and defines
 the context available to the node via tool calls. Templates are registered in
-the registry as signed Buzz events, so every template is versioned,
+the registry as signed events (Nostr-core kinds per §1), so every template is versioned,
 attributable, and diffable; instances record which template version spawned
 them, and evals attach to template versions. That linkage — instance → template
 version → eval history — is what makes the workforce "versioned and
@@ -190,8 +212,10 @@ billed at these prices.
 - **Template registration mechanics.** Kind numbers, versioning/replace
   semantics (parameterized-replaceable vs. append-only), template
   inheritance, and what exactly an eval attaches to.
-- **Custom kind allocation.** Lindenmayer's event kinds within Buzz's
-  40000–49999 custom range; relationship to NIP-AM/NIP-AO drafts.
+- **Custom kind allocation.** Lindenmayer's event kinds — placement in
+  Buzz's 40000–49999 custom range vs the standard parameterized-replaceable
+  range, and NIP-AM/NIP-AO alignment under §1's draft-dependency rule.
+  Relay-integration research underway (`docs/research/relay-integration/`).
 - **Retention policy defaults.** What per-channel relay retention ships as
   the privacy-preserving default.
 - **Evals pillar.** Sketched only via hand-authored Completion Requirements;
@@ -217,3 +241,4 @@ billed at these prices.
 | 2026-07-23 | Commissioning of `main.platform_architect`: this node now owns DESIGN.md and associated docs. The handrolled channel (the root's operator editing DESIGN.md directly) is closed; future design changes route through this node's inbox (priority 6) for review; merges to main remain the root's approval gate. Status line updated to reflect active ownership. All prior entries in this log are handrolled bootstrap history, audited and left unedited. | root (directive A2C8C8C7) | Adopted; first architect-committed change to this manifest. |
 | 2026-07-23 | Radio's one-hop subscription topology (parent subscribes only to direct children's outboxes) structurally enforces the aggregates-up privacy principle (§6.1): the platform's own wiring implements the design principle. Noted in §5, where it bounds evergreen-node visibility. | root (directive A2C8C8C7) | Adopted; placement in §5 per architect's judgment from the root's offered §5/§8. |
 | 2026-07-23 | Node-session transcripts as published telemetry: whether a subgraph publishes its raw node-session transcripts is a per-subgraph platform parameter (same family as governance mode); the platform-wide default is private-in-subgraph, consistent with §6.1. This dev tree is explicitly opted in — hook-synced transcripts are committed and published as the demo data. | root (directive 08A7AF4B) | Adopted, no veto — the private default is §6.1 applied to transcripts. Parameter + default recorded in §6.1; dev-tree opt-in recorded in §7. |
+| 2026-07-23 | Nostr-first output layering (§1): standard Nostr — not Buzz per se — is the bridge's primary integration target; core telemetry is consumable by any compliant relay and client (standard NIPs plus self-documented custom kinds), with Buzz-specific kinds and relay behavior a layer on top. Draft-dependency rule: the core may use a Buzz NIP draft only as schema-on-the-wire (NIP-OA attestation events qualify); relay-enforced revocation, branch-as-room, and buzz-protect are Buzz-layer; NIP-AM/AO alignment is restated in Lindenmayer's own kind docs. | root (directive 5CD20B25) | Approved, no veto — strengthens §6.2 (an event log readable by one v0.4.x product is a weaker source of truth) and hedges Buzz churn at no capability cost. §1 rewritten as two layers; §2 identity and §3 registration wording aligned; §8 kind-allocation question reframed under the rule; relay-integration research children spawned to detail the kind taxonomy and plain-relay degradation. |
