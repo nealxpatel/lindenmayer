@@ -98,20 +98,21 @@ def test_fixture_db_is_own_tree():
 
 
 def test_event_stream_shape(keypair):
-    """The translated stream has one 42010 per node and one 42020 per finished run."""
+    """The translated stream has one 42010 per node with finished runs and one 42020 per finished run."""
     reader = FractalDBReader(str(FIXTURE_DB))
     nodes = reader.get_nodes()
     finished_runs = [
         r for n in nodes for r in reader.get_runs(n["node"]) if r["ended_at"]
     ]
+    nodes_with_finished_runs = {r["node"] for r in finished_runs}
 
     events = _build_event_stream(keypair)
     kinds = [e.kind for e in events]
-    assert kinds.count(KIND_NODE_LIFECYCLE) == len(nodes)
+    assert kinds.count(KIND_NODE_LIFECYCLE) == len(nodes_with_finished_runs)
     assert kinds.count(KIND_RUN_ACCOUNTING) == len(finished_runs)
     assert set(kinds) == {KIND_NODE_LIFECYCLE, KIND_RUN_ACCOUNTING}
     # No per-step or per-iteration events exist anywhere in the stream.
-    assert len(events) == len(nodes) + len(finished_runs)
+    assert len(events) == len(nodes_with_finished_runs) + len(finished_runs)
 
 
 def test_event_ids_deterministic(keypair):
@@ -210,14 +211,16 @@ async def test_cli_invocation_produces_expected_events(keypair, tmp_path):
         with patch("lindenmayer.bridge.identity.load_node_keypair", side_effect=mock_load_node_keypair):
             # Also patch the import inside _bridge_main
             with patch("lindenmayer.bridge.cli.load_node_keypair", side_effect=mock_load_node_keypair):
-                # Invoke CLI's main bridge function directly (tests the wired pipeline)
-                await _bridge_main(
-                    tree_path=tree_path,
-                    db_path=temp_db,
-                    relay_url=relay.url,
-                    config=config,
-                    once=True,  # single-pass mode
-                )
+                # Patch CoreConfig.load_keypair to return test keypair for relay auth
+                with patch.object(CoreConfig, "load_keypair", return_value=keypair):
+                    # Invoke CLI's main bridge function directly (tests the wired pipeline)
+                    await _bridge_main(
+                        tree_path=tree_path,
+                        db_path=temp_db,
+                        relay_url=relay.url,
+                        config=config,
+                        once=True,  # single-pass mode
+                    )
 
         # Verify the relay has exactly the expected stream
         relay_ids = sorted([e["id"] for e in relay.events])

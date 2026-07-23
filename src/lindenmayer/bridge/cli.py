@@ -18,6 +18,7 @@ import sys
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from lindenmayer.bridge.identity import load_node_keypair, refuse_if_revoked
 from lindenmayer.core.config import CoreConfig
 from lindenmayer.core.keys import Keypair
 from lindenmayer.core.relay import RelayClient
@@ -100,7 +101,6 @@ async def _bridge_main(
 
     try:
         from lindenmayer.bridge.adapters.sqlite import FractalDBReader
-        from lindenmayer.bridge.identity import load_node_keypair, refuse_if_revoked
         from lindenmayer.bridge.publisher import Publisher
         from lindenmayer.bridge.translate import (
             translate_node_lifecycle,
@@ -120,7 +120,13 @@ async def _bridge_main(
     logger.info(f"Loaded {len(nodes) if nodes else 0} nodes from database")
 
     # Connect to relay and set up publisher
-    relay_client = RelayClient(relay_url, Keypair.from_hex("00" * 32), config)
+    try:
+        keypair = config.load_keypair()
+    except Exception as e:
+        logger.error(f"Failed to load keypair from config: {e}")
+        raise
+
+    relay_client = RelayClient(relay_url, keypair, config)
     await relay_client.connect()
 
     try:
@@ -182,7 +188,7 @@ async def _bridge_main(
         logger.info(f"Translated {len(events)} events")
 
         # Publish events
-        publisher = Publisher(relay_client, Keypair.from_hex("00" * 32))
+        publisher = Publisher(relay_client, keypair)
         await publisher.resume_from_relay()
         await publisher.publish_events(events)
 
