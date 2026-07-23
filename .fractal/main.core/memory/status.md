@@ -44,7 +44,19 @@ merge). NIP-OA/AM/AO drafts cached into each child's node tmp/nips/.
 - Watch architect reply re kind numbers (veto => renumber constants +
   docs/kinds filenames).
 
-## Budget notes
+## Handoff (reserve line reached)
 
-Own spend so far ≈ $11 of $40 cap; children may draw up to $17.5 combined.
-Plan the last productive iteration against ~$36 (cap minus reserve).
+Subtree spend hit the reserve window while all three children were early in
+their first working iterations — the manager wind-down landed before any
+child had committed real work.
+
+- Child branches and merge-readiness: `main.core.kinds`, `main.core.relay`,
+  `main.core.verify` are all ACTIVE with only their init commits on-branch —
+  **none merge-ready yet**. Each is leaf-capped and continues on its own
+  budget; whoever picks up main.core (a `--continue` of this node, or the
+  parent directly) must merge them per the ownership table above once they
+  commit, then do the integration work listed under "Mine at integration".
+- Nothing uncommitted in-scope; skeleton + tests green as of commit 1179338.
+- Architect escalation 456E2D7B (kind-number collision check) is sent; a
+  veto/renumber reply may arrive after this run ends — renumbering is
+  constants in the kinds child's code plus docs/kinds filenames.
