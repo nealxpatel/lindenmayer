@@ -1,10 +1,11 @@
 # Dev-Node Template (v2)
 
 The standard shape for Lindenmayer development nodes: decomposition doctrine,
-haiku-develop / fable-review model policy, and the architect-consultation
+sonnet-develop / opus-review model policy, and the architect-consultation
 covenant, packaged so every ply node instantiates identically. This is the
-first live instance of the Node Template concept (DESIGN.md §3) — versioned
-here until `registry` exists to hold template versions as signed events.
+first live instance of the Node Template concept (DESIGN.md §3), versioned
+here and registered as signed 42050 events via
+`lindenmayer-registry publish tree/templates/dev-node`.
 
 ## Instantiation checklist (operator)
 
@@ -13,7 +14,7 @@ here until `registry` exists to hold template versions as signed events.
 2. `fractal node init <name> --title "<Role>" --scope <scope> --model sonnet`
    plus caps: price from observed burn ×1.3; give depth/children only if the
    deliverables decompose.
-3. Pin every REVIEW step to fable: add `model: opus` to the frontmatter of
+3. Pin every REVIEW step to opus: add `model: opus` to the frontmatter of
    `steps/03-REVIEW.md` in the node's worktree (and verify on any child it
    spawns).
 4. Author the runtime NODE.md's Instructions/Completion Requirements from the
