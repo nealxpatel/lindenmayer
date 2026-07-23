@@ -4,10 +4,10 @@ desc: Bridge node delivers Fractal observability as signed Nostr events
 tags: [bridge, nostr, fractal, observability]
 sources: [tree/bridge/NODE.md, docs/DESIGN.md, docs/platforms.md]
 created: 2026-07-23T19:00:00Z
-updated: 2026-07-23T19:30:00Z
+updated: 2026-07-23T19:24:50Z
 ---
 
-# Bridge Implementation
+# bridge_implementation
 
 The bridge node implements Lindenmayer's core function: observing a Fractal agent tree as signed Nostr events through Buzz, making agent work versioned, evaluated, and human-owned.
 

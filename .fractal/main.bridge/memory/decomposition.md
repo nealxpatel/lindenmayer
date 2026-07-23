@@ -1,3 +1,13 @@
+---
+name: decomposition
+title: Bridge Decomposition Plan
+desc: ...
+tags: []
+sources: []
+created: 2026-07-23T19:24:50Z
+updated: 2026-07-23T19:24:50Z
+---
+
 # Bridge Decomposition Plan
 
 **Status:** Spawning children per work order step 2.
