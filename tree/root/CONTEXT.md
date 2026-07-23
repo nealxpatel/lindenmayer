@@ -68,7 +68,10 @@ Squash-merging a node branch can regress files the node never edited
 (repeated squash merges lose the merge-base; observed twice on 2026-07-23).
 After every `fractal node merge`, diff the merge commit against pre-merge
 `main` and restore any path outside the node's legitimate write surfaces
-before pushing.
+before pushing. Additionally: `git ls-files | grep .fractal` must return
+nothing on main after every merge — leaked node seeds on main corrupt
+other nodes' identities at their next PREPARE merge (observed: conflict
+markers written into the architect's runtime NODE.md mid-run).
 
 ## Consultation covenant
 
