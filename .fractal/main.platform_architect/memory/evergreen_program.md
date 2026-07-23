@@ -7,9 +7,47 @@ updated: 2026-07-23T21:40:30Z
 
 # evergreen_program
 
+## Status
+
+All three research children are COMPLETED (compaction, evergreen_inv,
+buzz_surface). No child outstanding; the pass is integration + synthesis
+only, plus one open review. Deliverables sit on the child branches
+(`docs/research/evergreen/{compaction,inventory,buzz-surface}.md`) and land
+at PREPARE. `docs/research/evergreen/README.md` is still the pre-research
+working draft — rewriting it to the final aggregate is a hard gate before
+finish.
+
+## Open review: model-policy retiering (A6BE089F, saved)
+
+Root directive, not a request, but a key-component change (dev-node template
++ tree-wide policy), so it needs a verdict and a decision-log row. Applied
+state: REVIEW and this node run opus (was fable); dev nodes and children run
+sonnet (was haiku); orchestrator opus. `tree/templates/dev-node` bumped to
+v2 and registered as a signed 42050 (version event 0f8d0910, pin c6696b7) —
+the registry's first real version bump.
+
+Verdict direction (posted early to root as 05237766): APPROVE. It tunes an
+economic parameter; it touches none of the four review-bar principles.
+Corrections that must land with the row:
+
+- `docs/DESIGN.md:108` names the tiers literally
+  ("haiku-develop/fable-review model policy") — stale against the live tree.
+  Rewrite to the SHAPE invariant (orchestrator writes precise work orders,
+  cheaper tier executes, stronger tier reviews) with the current tier
+  assignment recorded as a parameter, so the next retiering is a parameter
+  edit and not a manifest contradiction.
+- §7 decomposition economics were never load-bearing on haiku specifically —
+  the doctrine's claim is a RATIO (execution cheaper than review and
+  orchestration), which sonnet-develop/opus-review preserves. What changes is
+  absolute burn per child, so derived cap-sizing guidance is stated against
+  haiku-era numbers. Flag it; do not invent replacement numbers.
+- §3 describes registry-backed template versions as future; they are live
+  today. Update.
+
 ## Directive
 
-Root directive 7803C28A (saved in radio queue). Three deliverables:
+Root directive 7803C28A (saved in radio queue), continued by A280F6DC.
+Three deliverables:
 (1) resolve/advance §8 compaction-to-task mapping, (2) design evergreen v1
 concretely (requirements inventory = tree/root/CONTEXT.md; v1 line through
 §5's four capabilities), (3) map the Buzz human surface. Outputs:
@@ -52,10 +90,10 @@ labeled in-progress; MUST be rewritten to final aggregate before finish
 
 ## Synthesis plan
 
-Steer children each sync; merge settled children at PREPARE; rewrite README
-as aggregate; write DESIGN.md §5 revision + §8 compaction advance +
+No steering left — merge all three settled children at PREPARE; rewrite README
+as aggregate; verdict + row on the model-policy retiering (above); write DESIGN.md §5 revision + §8 compaction advance +
 decision-log rows (name requester = root directive 7803C28A, verdicts);
 radio reply to root with tree/evergreen/NODE.md skeleton proposal; progress
-summary priority 2-3; unsave 7803C28A; then node finish. If a child
-straggles past my last iteration: synthesize what landed, note the gap in
-aggregate + outbox, leave the rest for the next run (standing role).
+summary priority 2-3; unsave 7803C28A, A280F6DC, C2CDCD79, A6BE089F; then
+node finish. All research inputs are in hand, so no child-straggler
+contingency applies.
