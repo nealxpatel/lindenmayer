@@ -47,6 +47,21 @@ worktree directly:
 - **Budgets and signals** — per-run USD caps and the three-level stop
   escalation (`finish` / `stop` / `kill`).
 
+## Model policy
+
+Roles map to model tiers; the binding constraint is subscription rate
+windows, and frontier burn on mechanical work exhausts them (observed
+2026-07-23: instant zero-cost invocation failures mid-run).
+
+- **Orchestrator (this root's operator): Fable.** Writes the well-defined
+  work orders that make lighter models effective.
+- **Review: Fable.** The architect node runs Fable, and every dev node's
+  REVIEW step is pinned to Fable via step frontmatter (`model: fable`).
+- **Development: Haiku.** Builder nodes and their children run Haiku
+  (`model=haiku`; children inherit from the nearest ancestor). The quality
+  contract is precise instructions plus Fable review, not frontier
+  generation.
+
 ## Consultation covenant
 
 `docs/DESIGN.md` is the platform manifest and is owned by
