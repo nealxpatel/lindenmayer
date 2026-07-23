@@ -1,6 +1,6 @@
 ---
 name: fractal_read_adapters
-desc: Read-only adapters for accessing Fractal's SQLite database and transcript files
+desc: Read-only adapters for accessing Fractal's SQLite database and transcript files.
 tags: [adapters, sqlite, transcripts, read-only]
 sources: []
 created: 2026-07-23T19:06:51Z
@@ -25,6 +25,7 @@ from lindenmayer.bridge.adapters.sqlite import FractalDBReader
 **`__init__(db_path: str)`**
 - Initialize with path to `.db` file
 - Opens database in read-only mode (WAL-safe)
+- Supports use as a context manager (`with FractalDBReader(...) as r:`); call `close()` when done otherwise
 
 **`get_nodes() -> list[dict]`**
 - All nodes from the registry

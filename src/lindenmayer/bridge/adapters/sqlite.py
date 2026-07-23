@@ -5,7 +5,6 @@ WAL-safe, never writes.
 """
 
 import sqlite3
-from pathlib import Path
 
 
 class FractalDBReader:
@@ -21,6 +20,16 @@ class FractalDBReader:
         # Set up WAL-safe read mode
         self.conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         self.conn.row_factory = sqlite3.Row
+
+    def close(self):
+        """Close the underlying database connection."""
+        self.conn.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def get_nodes(self):
         """Read all nodes from the registry."""
