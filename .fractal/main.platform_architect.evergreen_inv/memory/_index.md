@@ -1,6 +1,6 @@
 ---
 name: memory
-desc: ...
+desc: Research leaf memory for evergreen requirements inventory task.
 tags: []
 sources: []
 created: 2026-07-23T21:37:37Z

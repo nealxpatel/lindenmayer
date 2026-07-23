@@ -1,6 +1,6 @@
 ---
 name: state
-desc: Current work state and progress
+desc: Work state and progress for evergreen requirements inventory.
 tags: []
 sources: []
 created: 2026-07-23T21:40:00Z
@@ -52,4 +52,4 @@ Build evergreen requirements inventory by decomposing tree/root/CONTEXT.md into 
 ## Progress
 - PLAN complete
 - EXECUTE complete: inventory.md written with full requirements table (28 requirements), source classification, existing-surface survey, per-capability gap analysis
-- COMMIT ready
+- COMMIT complete; inventory.md delivered
