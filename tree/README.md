@@ -20,6 +20,8 @@ prototype of the surface Lindenmayer will eventually maintain automatically.
 - `platform-architect/` — the first agent node (branch `main.platform_architect`;
   Fractal branch segments allow only `[A-Za-z0-9_]`, hence the underscore).
   `NODE.md` is its Fractal task contract.
+- `core/` — the first-ply foundation node (branch `main.core`): event kinds,
+  relay client, config. Merges first; the rest of the ply builds against it.
 
 One directory per node, named for the role; the `branch:` line inside each
 contract is the authoritative mapping to the Fractal branch namespace.
