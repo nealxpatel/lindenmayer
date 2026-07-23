@@ -35,15 +35,45 @@ Implement Deliverable 2 (translation functions) and Deliverable 3 (identity + NI
 - [x] Run tests and verify all pass
 - [x] Verify no other test breakage
 
-## Completion
-All requirements met:
-- `translate.py`: 6 translation functions implemented
-- `identity.py`: 3 identity functions + IdentityError exception
-- `test_bridge_translate.py`: 21 tests covering all translation functions
-- `test_bridge_identity.py`: 18 tests covering identity and attestation functions
-- Tests include golden tests, no-per-step-path constraint verification, and revoked-key refusal tests
-- All 39 tests pass
-- Main repo tests still pass (38 tests)
-- test.sh script configured and working
+## Deliverables
+
+### Implementation
+- **translate.py**: 6 translation functions mapping Fractal rows to core kind models
+  - `translate_node_lifecycle` → kind 42010
+  - `translate_run_accounting` → kind 42020 (one per run, never per-step)
+  - `translate_subgraph_digest` → kind 42030
+  - `translate_approval_request` → kind 42040
+  - `translate_approval_verdict` → kind 42041
+  - `translate_node_state` → kind 38110
+
+- **identity.py**: 3 identity functions with NIP-OA attestation checking
+  - `load_node_keypair`: Load or derive keypair for persistent nodes
+  - `check_attestation_valid`: Verify attestation is current and not revoked
+  - `refuse_if_revoked`: Fail-safe gate for revoked/expired keys
+  - `IdentityError`: Exception for invalid/revoked identities
+
+### Test Suite
+- **test_bridge_translate.py**: 21 tests covering all 6 translation functions
+  - Golden tests: fixture rows → expected models
+  - No-per-step-path: confirms kind 42020 is per-run only
+  - Constraint verification: no step-level fields in RunAccounting
+
+- **test_bridge_identity.py**: 18 tests covering identity and attestation
+  - Keypair generation: deterministic key derivation
+  - Attestation validation: current, non-revoked, non-expired
+  - Revoked-key refusal: IdentityError on revoked/expired keys
+  - Error handling: proper exception messages
+
+- **Total: 39 tests, all passing**
+- Main repo tests unaffected (38 tests still passing)
+- test.sh script working correctly
+
+### Completion Status
+✅ All Completion Requirements Met
+- Deliverable 2: Translation layer fully implemented
+- Deliverable 3: Identity module fully implemented  
+- All tests passing
+- No test breakage
+- Code committed: 8e2d3fb
 
 ***
