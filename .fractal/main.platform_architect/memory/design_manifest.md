@@ -24,8 +24,9 @@ updated: 2026-07-23T13:00:07Z
   Draft-dependency rule: Buzz NIP drafts usable by core only
   schema-on-the-wire — NIP-OA attestation events core, relay-enforced
   revocation Buzz-layer; NIP-AM/AO schemas restated in our own kind docs.
-  §2 identity and §3 registration wording aligned; §8 kind-allocation
-  question reframed under the rule. Details in memory page
+  §2 identity and §3 registration wording aligned. NIP-OA is an `auth` TAG
+  on ordinary events, not an event kind (§1/§2 worded accordingly; registry
+  restatement at docs/kinds/nip-oa-attestation.md). Details in memory page
   relay_integration.
 - §6 has **five** principles; the fifth (root directive 0FD60E31): relay
   enforcement is an optimization, never an assumption — client-side
@@ -53,9 +54,8 @@ updated: 2026-07-23T13:00:07Z
 - Boundary recorded: core owns `docs/kinds/` file contents inside my `docs/`
   scope; DESIGN.md and the rest of docs/ stay mine. Registry relocation from
   docs/research/relay-integration/kinds/ to docs/kinds/ approved.
-- Expected inbound: core will escalate its kind-number collision-check result
-  to my inbox at priority 6 — resolving it is my call (§8 kind-allocation
-  question stays open until then).
+- Collision-check escalation arrived (456E2D7B) and was resolved: all eight
+  kinds clear vs block/buzz @ 06e3d82; ACK'd to core (F105F59A).
 
 ## Audit findings
 
@@ -82,3 +82,23 @@ updated: 2026-07-23T13:00:07Z
   in docs/research/.
 - Radio-topology note lives in §5 (bounds evergreen visibility, refs §6.1) —
   chosen over §8 because it is current truth, not an open question.
+
+## Kind allocation & templates — closed
+
+- §8 'custom kind allocation' and 'template registration mechanics' are
+  CLOSED (decision-log rows cite 456E2D7B + root directive AF477673):
+  42010/42020/42030/42040/42041/42050 regular, 38110/38150 addressable, all
+  collision-free vs block/buzz @ 06e3d82 (crates/buzz-core/src/kind.rs — the
+  platforms.md path cite is fixed), implemented in core, registry live at
+  docs/kinds/. §3 now carries registry mechanics as current truth (42050
+  append-only versions, 38150 pointer, inherit e-tag, eval anchor = version
+  event id); §8 retains only compaction, retention, evals pillar, and
+  history-grant mechanics.
+- Dev-node template v1 (tree/templates/dev-node/, pinned 9574393):
+  APPROVE-WITH-CONDITIONS (verdict 0773CC27). Condition: instance linkage
+  line must carry the template pin ('dev-node v1 @ 9574393') so 42050's
+  template_name/version/git_ref are mechanical. Non-blocking proposals:
+  parameterize first-ply branch/parent lines; fable REVIEW pin on children
+  is applied by the spawning parent. §3 notes the first live instance. Root
+  instantiates the bridge node from this template after applying the
+  condition.
