@@ -1,7 +1,7 @@
 ---
 name: progress
-title: Bridge Node - Recovery Complete, Green
-desc: Split-brain recovery from accidental main commits
+title: Bridge Node - Recovery Complete
+desc: Split-brain recovery from accidental main commits.
 tags: []
 sources: []
 created: 2026-07-23T19:24:50Z
@@ -10,9 +10,7 @@ updated: 2026-07-23T20:28:35Z
 
 # Bridge Node - Recovery Complete
 
-Iteration 1 (SYNC → PREPARE): Recovered split-brain commits from main branch.
-
-All five deliverables fully implemented and tested. Test suite: 211 passing.
+Split-brain commits recovered from the main branch; all five deliverables fully implemented and tested. Test suite: 211 passing.
 
 ## Recovery Applied
 
@@ -38,7 +36,7 @@ Root work order (296F6D0C): Cherry-picked three commits from main back onto main
 4. **Publisher** — Stateless relay-cursor resume, idempotent replay
 5. **CLI Entry Point** — `lindenmayer-bridge run --tree <path> --relay <url> --once`
 
-Test exit codes verified directly (never through pipe). All 210 tests pass.
+Test exit codes verified directly (never through pipe). All 211 tests pass.
 
 ## Compliance
 
