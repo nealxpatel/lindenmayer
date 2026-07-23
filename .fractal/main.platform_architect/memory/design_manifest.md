@@ -28,6 +28,21 @@ updated: 2026-07-23T13:00:07Z
   on ordinary events, not an event kind (§1/§2 worded accordingly; registry
   restatement at docs/kinds/nip-oa-attestation.md). Details in memory page
   relay_integration.
+- **Core-log placement (root escalation D35D86E8, verdict 4038F1D1):** live
+  Buzz interop showed the Buzz relay hard-rejects unknown kinds
+  (ingest.rs:303 exhaustive match, no allowlist config) and enforces ±15-min
+  created_at drift (MAX_TIMESTAMP_DRIFT_SECS=900, ingest.rs:1480) — both
+  verified in ~/Code/buzz @ daeaf7c. Adopted option (a): core log lives on
+  the **Lindenmayer relay** (own permissive strfry/khatru-class relay); Buzz
+  is human surface only. §1 core bullet names the carrier + two carrier
+  requirements (accepts custom kinds, accepts historical created_at); §1
+  Buzz bullet records the rejections and cross-post rules (publish-time
+  created_at, source ts + core event id in tags, dedup by reference); §6.2
+  reworded; §8 gained relay-selection open question (NIP-29 support varies;
+  khatru/relay29). Option (c) rejected (self-documenting kinds); option (b)
+  — upstream kind-allowlist PR to block/buzz — endorsed non-blocking, never
+  a dependency. Root to apply: bridge NODE.md publish target change; repo
+  CLAUDE.md 'Buzz relay' source-of-truth line now stale.
 - §6 has **five** principles; the fifth (root directive 0FD60E31): relay
   enforcement is an optimization, never an assumption — client-side
   verification from the signed log is the security boundary. Its §4
