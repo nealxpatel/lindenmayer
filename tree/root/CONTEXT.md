@@ -51,16 +51,22 @@ worktree directly:
 
 Roles map to model tiers; the binding constraint is subscription rate
 windows, and frontier burn on mechanical work exhausts them (observed
-2026-07-23: instant zero-cost invocation failures mid-run).
+repeatedly on 2026-07-23: instant zero-cost invocation failures mid-run).
 
-- **Orchestrator (this root's operator): Fable.** Writes the well-defined
-  work orders that make lighter models effective.
-- **Review: Fable.** The architect node runs Fable, and every dev node's
-  REVIEW step is pinned to Fable via step frontmatter (`model: fable`).
-- **Development: Haiku.** Builder nodes and their children run Haiku
-  (`model=haiku`; children inherit from the nearest ancestor). The quality
-  contract is precise instructions plus Fable review, not frontier
-  generation.
+- **Orchestrator (this root's operator): Opus.** Writes the well-defined
+  work orders that make delegated execution effective.
+- **Review: Opus.** The architect node runs Opus, and every dev node's
+  REVIEW step is pinned to Opus via step frontmatter (`model: opus`).
+- **Development: Sonnet.** Builder nodes and their children run Sonnet
+  (`model=sonnet`; children inherit from the nearest ancestor). The quality
+  contract is precise instructions plus Opus review, not frontier
+  generation at every step.
+
+Tier assignment is a root decision and a platform parameter; it changed
+from Fable-review/Haiku-develop to Opus-review/Sonnet-develop on
+2026-07-23 by root directive. The *shape* — orchestrator writes precise
+work orders, cheaper tier executes, stronger tier reviews — is the
+invariant; the specific tiers are tunable.
 
 ## Merge hygiene
 
