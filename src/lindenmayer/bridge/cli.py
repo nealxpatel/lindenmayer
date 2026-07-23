@@ -67,7 +67,7 @@ def run(tree: str, relay: str, config: str | None, log_level: str):
 
     try:
         core_config = (
-            CoreConfig.from_file(config) if config else CoreConfig.default()
+            CoreConfig.from_toml(config) if config else CoreConfig(relay_url=relay)
         )
     except Exception as e:
         click.echo(f"Error loading config: {e}", err=True)

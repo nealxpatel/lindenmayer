@@ -1,6 +1,15 @@
 # Bridge Node - Completion Report
 
-All five deliverables implemented and tested. Final test suite: 199 passing.
+All five deliverables implemented and tested. Final test suite: 210 passing
+(via the node test gate, which runs the full pytest suite).
+
+Review pass caught and fixed three defects the earlier "199 passing" figure
+concealed: (a) all 6 publisher tests were erroring at fixture setup on a
+nonexistent `CoreConfig.default()` (pytest errors are not failures, so the
+passed-count looked healthy); (b) the E2E dogfood test did not exist; (c)
+`resume_from_relay()` tracked only the latest event id per kind, so a replay
+after restart duplicated every non-latest event — the restored E2E test caught
+this on its first run. Verify pytest exit codes directly, never through a pipe.
 
 ## Deliverables Shipped
 
@@ -34,9 +43,11 @@ All five deliverables implemented and tested. Final test suite: 199 passing.
 
 ## Test Summary
 
-- 199 tests passing (full suite)
-- Coverage: adapters, transcripts, translation, identity, publisher, CLI
-- No regressions; all architect conditions met (8266A685)
+- 210 tests passing (full suite via test.sh gate, exit 0 verified directly)
+- Coverage: adapters, transcripts, translation, identity, publisher (6 mock-relay
+  tests), E2E dogfood (5 tests: fixture tree.db → translate → sign → mock relay,
+  mid-stream restart with no duplicates/gaps, deterministic ids)
+- All architect conditions met (8266A685)
 
 ## Architect Compliance
 

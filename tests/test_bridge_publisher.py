@@ -38,7 +38,7 @@ def keypair():
 @pytest.fixture
 async def relay_client(mock_relay, keypair):
     """Create a relay client connected to the mock relay."""
-    config = CoreConfig.default()
+    config = CoreConfig(relay_url=mock_relay.url)
     client = RelayClient(mock_relay.url, keypair, config)
     await client.connect()
     yield client

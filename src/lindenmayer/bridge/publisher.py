@@ -68,10 +68,12 @@ class Publisher:
 
             resume_points: dict[str, int] = {}
             for event in events:
+                # Every own event on the relay is already published — track them
+                # all, not just the latest per kind, or a replay duplicates the rest.
+                self._published_event_ids.add(event.id)
                 kind_key = str(event.kind)
                 if kind_key not in resume_points or event.created_at > resume_points[kind_key]:
                     resume_points[kind_key] = event.created_at
-                    self._published_event_ids.add(event.id)
 
             return resume_points if resume_points else None
         except Exception as e:

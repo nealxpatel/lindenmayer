@@ -106,13 +106,15 @@ Maps Fractal rows to six core event kinds:
 
 ## Test Coverage
 
-- 199 tests passing
-- Fixture database with representative tree structure
+- 210 tests passing
+- Fixture database: a real snapshot of this repo's own tree (the dogfood)
 - Fixture transcripts with token usage data
-- Mock relay for publisher idempotent-replay verification
+- Mock relay (in-process websocket NIP-01 server) for publisher idempotent-replay verification
+- E2E dogfood: fixture tree DB → translate → sign → publish → mock relay, with a
+  mid-stream publisher restart asserting no duplicates, no gaps, deterministic ids
 - Translation golden tests (fixture rows → expected event structure)
 - Identity: revoked-key refusal, attestation expiration
-- No-per-step-path enforcement
+- No-per-step-path enforcement (stream contains only per-node 42010 and per-run 42020)
 
 ## Integration Points
 
