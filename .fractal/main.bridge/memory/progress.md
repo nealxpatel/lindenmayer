@@ -42,3 +42,26 @@
 1. **Integration** (Step 4): Merge children, wire exports, run full test suite
 2. **E2E dogfood test** (Deliverable 5): fixture tree DB -> mock relay -> expected stream
 3. **Completion** (Step 5): Verify all tests pass, promote findings, finish node
+
+## Iteration 2 Progress - PREPARE
+
+### Child Integration Complete
+
+**Merged:**
+- main.bridge.adapters: FractalDBReader + TranscriptUsageHarvester (deliverable 1) ✅
+- main.bridge.translate: Translation layer + identity module (deliverables 2 & 3) ✅
+
+**Test Results:** 199 tests passing
+- Adapters: SQLite read-only access, transcript usage harvesting
+- Translation: All 6 kind models (42010, 42020, 42030, 42040, 42041, 38110)
+- Identity: Keypair loading, attestation checking, revoked-key refusal
+- Publisher: Deterministic ids, relay cursor resume, idempotent replay
+- CLI: Entry point with config loading
+
+### Next: Complete CLI and E2E integration
+
+Remaining work:
+- Wire adapters + translate into publisher CLI
+- Create E2E dogfood test (fixture tree DB -> mock relay -> expected events)
+- Full integration test suite
+- Node finish
