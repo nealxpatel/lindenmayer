@@ -1,9 +1,12 @@
 ---
+name: research-plan
 title: Buzz Surface Research Plan
+desc: ...
 created: 2026-07-23T21:47:00Z
+updated: 2026-07-23T23:41:27Z
 ---
 
-# Research Task: Buzz Human-Surface Mapping
+# Buzz Surface Research Plan
 
 ## Objective
 Ground the Buzz human-surface mapping for the evergreen component by researching:
