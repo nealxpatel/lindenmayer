@@ -49,12 +49,10 @@ def test_relay_url_must_be_websocket():
 
 
 def test_keypair_from_env(monkeypatch):
-    kp = Keypair.generate()
     secret_hex = "11" * 32
     monkeypatch.setenv("LINDENMAYER_SECRET_KEY", secret_hex)
     loaded = make_config().load_keypair()
     assert loaded.public_key_hex == Keypair.from_hex(secret_hex).public_key_hex
-    del kp
 
 
 def test_keypair_missing_everywhere(monkeypatch):
