@@ -103,6 +103,16 @@ This is why identity and signing are load-bearing rather than decorative:
 unsigned telemetry can be dashboarded, but only attested, versioned history
 can be safely trained on.
 
+**Extraction-pipeline requirements.** The verification burden of §6.5 is not
+uniform across consumers, and it is heaviest here. An interactive client
+that briefly trusts a revoked agent shows a stale message; an extraction
+pipeline that trusts the relay bakes unattested trajectories into model
+weights. Two requirements follow. The extraction pipeline applies
+attestation-validity filtering itself — it never assumes the relay enforced
+revocation or membership. And every corpus row is labeled with its author's
+attestation state at extraction time, so downstream training can filter or
+weight on it.
+
 **History access grants.** Training use of history is consent-gated, and the
 consent mechanism is the platform's own idiom: a human grants time-limited
 access to their history — to a node or to another human — as a **signed,
@@ -161,6 +171,19 @@ context stays traceable (open question, §8).
 4. **Human governance is explicit and traceable.** Design review is a veto by
    default (a platform parameter); disagreements resolve as recorded
    conversation, never silent override.
+5. **Relay enforcement is an optimization, never an assumption.** Client-side
+   verification from the signed log is the security boundary. Buzz's
+   relay-side enforcement — instant revocation cutoff, approval-gated
+   merges, membership-checked writes, private-group read gating — is
+   defense-in-depth that makes enforcement cheap when Buzz is deployed
+   alongside, but it is Buzz-layer under §1's layering rule, and no client,
+   bridge, or consumer may reason from it. Every consumer verifies from the
+   signed log alone: attestation chains are checked before an author is
+   trusted, approvals are counted before a merge is treated as approved,
+   revoked keys are filtered at read time, and private-group read gating is
+   treated as unverified until the deployment proves it. (Detail and the
+   minimum relay contract: the relay-integration research aggregate,
+   `docs/research/relay-integration/README.md`.)
 
 ### Shadow cost
 
@@ -242,3 +265,4 @@ billed at these prices.
 | 2026-07-23 | Radio's one-hop subscription topology (parent subscribes only to direct children's outboxes) structurally enforces the aggregates-up privacy principle (§6.1): the platform's own wiring implements the design principle. Noted in §5, where it bounds evergreen-node visibility. | root (directive A2C8C8C7) | Adopted; placement in §5 per architect's judgment from the root's offered §5/§8. |
 | 2026-07-23 | Node-session transcripts as published telemetry: whether a subgraph publishes its raw node-session transcripts is a per-subgraph platform parameter (same family as governance mode); the platform-wide default is private-in-subgraph, consistent with §6.1. This dev tree is explicitly opted in — hook-synced transcripts are committed and published as the demo data. | root (directive 08A7AF4B) | Adopted, no veto — the private default is §6.1 applied to transcripts. Parameter + default recorded in §6.1; dev-tree opt-in recorded in §7. |
 | 2026-07-23 | Nostr-first output layering (§1): standard Nostr — not Buzz per se — is the bridge's primary integration target; core telemetry is consumable by any compliant relay and client (standard NIPs plus self-documented custom kinds), with Buzz-specific kinds and relay behavior a layer on top. Draft-dependency rule: the core may use a Buzz NIP draft only as schema-on-the-wire (NIP-OA attestation events qualify); relay-enforced revocation, branch-as-room, and buzz-protect are Buzz-layer; NIP-AM/AO alignment is restated in Lindenmayer's own kind docs. | root (directive 5CD20B25) | Approved, no veto — strengthens §6.2 (an event log readable by one v0.4.x product is a weaker source of truth) and hedges Buzz churn at no capability cost. §1 rewritten as two layers; §2 identity and §3 registration wording aligned; §8 kind-allocation question reframed under the rule; relay-integration research children spawned to detail the kind taxonomy and plain-relay degradation. |
+| 2026-07-23 | Security boundary (§6.5): relay enforcement is an optimization, never an assumption — client-side verification from the signed log is the security boundary; Buzz relay-side enforcement is defense-in-depth no client, bridge, or consumer may reason from. Training-pipeline consequence (§4): the extraction pipeline applies attestation-validity filtering itself and labels every corpus row with its author's attestation state at extraction time — stated requirements, not guidance. | root (directive 0FD60E31) | Adopted — elevates the relay-integration research recommendation (aggregate finding 5, `docs/research/relay-integration/README.md`) from research advice to platform principle. §6 principle 5 added; §4 "Extraction-pipeline requirements" paragraph recorded; both cross-reference §1's layering rule. |

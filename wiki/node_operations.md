@@ -19,18 +19,30 @@ A hook syncs the live session transcript to `transcripts/<session>.jsonl`
 to the loop's `(auto)` force-commit backstop — transcripts are an
 intentional public record for this tree (see `docs/DESIGN.md` §7).
 
-## `.fractal/` is gitignored here
+## `.fractal/` ignore rules (changed on main)
 
-This repo gitignores `.fractal/` (runtime state; versioned node contracts
-live in `tree/` instead — see CLAUDE.md). Consequences when spawning:
+The repo's `.gitignore` no longer blanket-ignores `.fractal/` — the entry
+was dropped on main (commit 9e32acb) because it broke `fractal commit` for
+every scoped node: fractal's staging names the node's own
+`.fractal/<branch>` dir as an explicit literal pathspec, and git hard-errors
+on an explicitly-named ignored path. Runtime-state exclusion is fractal's
+own `.git/info/exclude` mechanism, which is narrower. Consequences:
 
-- `fractal commit --init` in a fresh child worktree fails with "paths
-  ignored by .gitignore" because the seed is not committable. This is fine:
-  the child's worktree is clean w.r.t. tracked files and starts normally
-  without the baseline commit.
-- A child's NODE.md/memory/plans therefore never travel through git — edit
-  them on disk in the child's worktree; merge-up carries only project
-  files.
+- Scoped `fractal commit` works without `--force` again; stop routing
+  around it.
+- `.fractal/` may appear as untracked in `git status` — that is expected,
+  not drift. Nothing under `.fractal/` is tracked on any branch.
+- Versioned node contracts still live in `tree/` (see CLAUDE.md); a child's
+  NODE.md/memory/plans are edited on disk in the child's worktree, and
+  merge-up carries only project files.
+
+## rtk filters merge commits from `git log`
+
+The rtk proxy (which transparently wraps git commands) drops merge commits
+from `git log` output — after a PREPARE merge, HEAD can look stale or your
+merge commits invisible. Not data loss: verify with
+`rtk proxy git log --first-parent --oneline` (raw, unfiltered) or
+`git rev-parse HEAD` before concluding a merge didn't land.
 
 ## CLI syntax gotchas
 
