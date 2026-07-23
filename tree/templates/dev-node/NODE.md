@@ -44,7 +44,7 @@ cover children + spawn ceremony + one integration iteration.
 You and your children run **sonnet**; every REVIEW step is pinned to
 **opus** via step frontmatter (`model: opus`). The pin on a child is
 applied by YOU, the spawning parent, before starting it — a child cannot
-edit its own immutable seed — then verified after spawn. The quality contract is precise work orders plus fable review,
+edit its own immutable seed — then verified after spawn. The quality contract is precise work orders plus opus review,
 not frontier generation. Work orders to children are numbered, one decision
 per item, with acceptance evidence named.
 
