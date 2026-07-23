@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+
+# Fractal runtime dirs
+.worktrees/
+.fractal/
+
+# Local tooling
+.claude/settings.local.json
+.DS_Store
