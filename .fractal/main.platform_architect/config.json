@@ -9,7 +9,7 @@
   "meta": null,
   "agent": "claude",
   "provider": null,
-  "model": "fable",
+  "model": "opus",
   "effort": null,
   "max_iters": 3,
   "max_depth": 2,
