@@ -36,6 +36,27 @@ updated: 2026-07-23T13:00:07Z
   guidance. Both cross-reference §1's layering rule; both trace to the
   decision-log row citing 0FD60E31.
 
+## Core commissioning (first ply)
+
+- `main.core` contract (tree/core/NODE.md, merged at 40a236c) countersigned
+  **approve-with-conditions** (root request 8AFB1E8C, verdict reply 95D09C90;
+  decision-log row in §9). Core starts on root's go after applying (or riding
+  along via core's inbox) three conditions:
+  - A: docs/kinds/ registry includes the NIP-OA schema restatement
+    (nip-oa-attestation.md — nine files, not eight); contract's "never
+    restated" means no re-derived custom kind, not no restatement doc.
+    Upstream OA/AM/AO drafts pulled from block/buzz before entries written.
+  - B: acceptable-degradation posture (aggregate rec. 3) documented in the
+    library docs.
+  - C: "escalated and acknowledged" completion gate reworded to gate on the
+    escalation being sent; I commit to prompt acknowledgment when running.
+- Boundary recorded: core owns `docs/kinds/` file contents inside my `docs/`
+  scope; DESIGN.md and the rest of docs/ stay mine. Registry relocation from
+  docs/research/relay-integration/kinds/ to docs/kinds/ approved.
+- Expected inbound: core will escalate its kind-number collision-check result
+  to my inbox at priority 6 — resolving it is my call (§8 kind-allocation
+  question stays open until then).
+
 ## Audit findings
 
 - Body cross-references verified correct: §4→§1, §4→§6.1, §4→§6.5, §5→§8,
