@@ -126,8 +126,9 @@ async def _bridge_main(
     try:
         events = []
 
-        for node_row in sorted(nodes, key=lambda r: r["node"]):
-            node_name = node_row["node"]
+        # Use reader's joined view for node lifecycle events
+        for lifecycle_row in db_reader.get_node_lifecycle_rows():
+            node_name = lifecycle_row["node"]
             keypair = load_node_keypair(node_name)
             if keypair is None:
                 logger.debug(f"Node {node_name} is ephemeral, skipping")
@@ -139,23 +140,23 @@ async def _bridge_main(
                 logger.warning(f"Node {node_name} attestation check failed: {e}")
                 continue
 
-            # Translate node lifecycle
-            lifecycle = translate_node_lifecycle(
-                {
-                    "node": node_row["node"],
-                    "status": node_row["status"],
-                    "run": node_row["node"],  # registry rows carry no run; key by branch
-                }
-            )
+            # Translate node lifecycle using actual reader output
+            lifecycle = translate_node_lifecycle(lifecycle_row)
             if lifecycle is not None:
                 event = lifecycle.to_event(
                     pubkey=keypair.public_key_hex,
-                    created_at=_epoch(node_row["created_at"]),
+                    created_at=_epoch(lifecycle_row["created_at"]),
                 )
                 events.append(keypair.sign_event(event))
-                logger.debug(f"Translated lifecycle for {node_name}")
+                logger.debug(f"Translated lifecycle for {node_name} (run {lifecycle_row['run']})")
 
-            # Translate run accounting
+        # Translate run accounting
+        for node_row in sorted(nodes, key=lambda r: r["node"]):
+            node_name = node_row["node"]
+            keypair = load_node_keypair(node_name)
+            if keypair is None:
+                continue
+
             for run_row in sorted(db_reader.get_runs(node_name), key=lambda r: r["run_id"]):
                 if not run_row["ended_at"]:
                     continue  # active runs have no rollup yet
