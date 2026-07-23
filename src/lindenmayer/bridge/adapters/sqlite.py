@@ -47,6 +47,26 @@ class FractalDBReader:
         )
         return [dict(row) for row in cursor.fetchall()]
 
+    def get_node_lifecycle_rows(self):
+        """Get node-run joined rows for lifecycle translation.
+
+        Returns rows with: node, status, run (run_id), created_at (from run end or start).
+        Each row represents a node's status within a run.
+        """
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT
+                n.node,
+                r.status,
+                r.run_id AS run,
+                COALESCE(r.ended_at, r.started_at) AS created_at
+            FROM nodes n
+            LEFT JOIN runs r ON n.node = r.node
+            WHERE r.run_id IS NOT NULL
+            ORDER BY n.node, r.run_id
+        """)
+        return [dict(row) for row in cursor.fetchall()]
+
     def get_iters(self, run_id: int):
         """Read all iterations for a given run."""
         cursor = self.conn.cursor()
