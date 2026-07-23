@@ -16,3 +16,5 @@ updated: 2026-07-23T20:24:17Z
 [[node_operations|node_operations]]: Repo-specific fractal operating quirks every node hits (scope, transcripts, spawning).
 
 [[registry_implementation|registry_implementation]]: Template registry for publishing, reading, and validating template versions as Nostr events.
+
+***
