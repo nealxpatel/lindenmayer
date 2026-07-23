@@ -40,27 +40,29 @@ def _epoch(iso_ts: str) -> int:
 
 
 def _build_event_stream(keypair: Keypair) -> list:
-    """Read the fixture tree DB using actual reader output, translate, and sign events.
+    """Read the fixture tree DB, translate rows, and sign the event stream.
 
-    Uses the reader's joined lifecycle view to verify the adapter/translator seam.
     Pure function of the fixture DB and keypair — calling it twice must
     produce byte-identical events (the determinism the dogfood test asserts).
     """
     reader = FractalDBReader(str(FIXTURE_DB))
     events = []
 
-    # Use reader's joined view for node lifecycle events (verifies adapter output shapes)
-    for lifecycle_row in reader.get_node_lifecycle_rows():
-        lifecycle = translate_node_lifecycle(lifecycle_row)
-        assert lifecycle is not None, f"lifecycle translation failed for {lifecycle_row['node']} run {lifecycle_row['run']}"
+    for node_row in sorted(reader.get_nodes(), key=lambda r: r["node"]):
+        lifecycle = translate_node_lifecycle(
+            {
+                "node": node_row["node"],
+                "status": node_row["status"],
+                "run": node_row["node"],  # registry rows carry no run; key by branch
+            }
+        )
+        assert lifecycle is not None, f"lifecycle translation failed for {node_row['node']}"
         event = lifecycle.to_event(
             pubkey=keypair.public_key_hex,
-            created_at=_epoch(lifecycle_row["created_at"]),
+            created_at=_epoch(node_row["created_at"]),
         )
         events.append(keypair.sign_event(event))
 
-    # Translate run accounting using actual reader output
-    for node_row in sorted(reader.get_nodes(), key=lambda r: r["node"]):
         for run_row in sorted(reader.get_runs(node_row["node"]), key=lambda r: r["run_id"]):
             if not run_row["ended_at"]:
                 continue  # active runs have no rollup yet
