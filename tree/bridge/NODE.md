@@ -44,7 +44,13 @@ Deliverables, in `src/lindenmayer/bridge/`:
    revoked or expired (the documented degradation posture: closes new
    activity at the source). Acceptance: revoked-key refusal tests.
 4. **Publisher.** Publishes through core's relay client against the minimum
-   relay contract. Stateless resume: the relay is the cursor — on startup,
+   relay contract, targeting the **Lindenmayer relay** (our own permissive
+   carrier — DESIGN.md §1 as revised by the D35D86E8 ruling: Buzz rejects
+   third-party kinds and windows created_at, so it is the human surface,
+   never the core-log carrier). Buzz-bound cross-posts are a separate
+   derived path: publish-time created_at, source timestamp + core event id
+   in tags, idempotency by reference (query for an existing cross-post
+   citing the core id), never by id determinism. Stateless resume: the relay is the cursor — on startup,
    query own latest published events per node and resume from there; no
    local state files, no new storage of any kind (§6.2). Event ids MUST be
    deterministic: event content and `created_at` derive from Fractal source
