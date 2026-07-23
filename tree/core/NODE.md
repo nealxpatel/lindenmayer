@@ -25,7 +25,11 @@ Deliverables, in `src/lindenmayer/core/`:
    lifecycle, 42020 run accounting, 42030 subgraph digest, 42040/42041
    approval request/verdict, 42050 template version; addressable: 38110 node
    state, 38150 template pointer — plus NIP-OA attestation events reused
-   schema-as-is (never restated). Each custom kind is self-documented into
+   as-is (no Lindenmayer kind minted; the upstream schema is restated in
+   `docs/kinds/nip-oa-attestation.md` per event-kinds.md §1.7, so draft
+   churn cannot invalidate historical attestation semantics — pull
+   `docs/nips/OA.md`, `AM.md`, and `AO.md` from block/buzz before writing
+   those entries). Each custom kind is self-documented into
    `docs/kinds/` per the convention in event-kinds.md §4, so any Nostr
    client can interpret it without Lindenmayer context.
 3. **Relay client.** The minimum relay contract is NIP-01 + NIP-29 + NIP-42
@@ -71,8 +75,16 @@ Constraints:
   verification-module cases (valid, expired, and revoked attestation chains;
   approval-count edges); relay client exercised against a mock or local
   relay.
-- `docs/kinds/` documents all eight custom kinds per the event-kinds.md §4
-  convention.
-- The collision-check result is escalated to the architect and acknowledged.
+- `docs/kinds/` documents all eight custom kinds plus the NIP-OA restatement
+  (nine files) per the event-kinds.md §4 convention.
+- Library documentation states the acceptable-degradation posture (research
+  aggregate, recommendation 3): merge-gate enforcement is a bridge/process
+  concern layered above the signed approval events; revocation latency under
+  bridge-refusal + reader-filtering is documented, not hidden; human
+  surfaces are pure UX with any NIP-29 client as substitute.
+- The collision-check escalation is sent to the architect (priority 6).
+  (Acknowledgment is the architect's commitment, not your gate — a reply
+  requirement would strand a done node `exited` if the architect isn't
+  running.)
 - Progress posted to your outbox; `fractal node finish` in the iteration the
   requirements hold.
