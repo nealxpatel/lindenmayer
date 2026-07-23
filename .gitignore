@@ -6,9 +6,9 @@ __pycache__/
 dist/
 build/
 
-# Fractal runtime dirs
-.worktrees/
-.fractal/
+# Fractal runtime dirs are ignored via the managed block in .git/info/exclude
+# (fractal init writes it); a blanket ignore here breaks fractal commit's
+# git-add pathspec against node seed paths.
 
 # Local tooling
 .claude/settings.local.json
