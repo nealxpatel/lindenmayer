@@ -5,7 +5,6 @@ WAL-safe, never writes.
 """
 
 import sqlite3
-from pathlib import Path
 
 
 class FractalDBReader:
@@ -22,6 +21,16 @@ class FractalDBReader:
         self.conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         self.conn.row_factory = sqlite3.Row
 
+    def close(self):
+        """Close the underlying database connection."""
+        self.conn.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def get_nodes(self):
         """Read all nodes from the registry."""
         cursor = self.conn.cursor()
@@ -35,6 +44,33 @@ class FractalDBReader:
             "SELECT run_id, node, parent_run_id, agent, max_cost, status, exit_code, metadata, started_at, ended_at FROM runs WHERE node = ?",
             (node,)
         )
+        return [dict(row) for row in cursor.fetchall()]
+
+    def get_node_lifecycle_rows(self):
+        """Get node-run joined rows for lifecycle translation.
+
+        Returns one row per persistent node with a finished run.
+        Each node's row represents its latest finished run status (a status transition).
+        Fields: node, status, run (run_id as TEXT), created_at (from run end).
+        """
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT
+                n.node,
+                r.status,
+                CAST(r.run_id AS TEXT) AS run,
+                r.ended_at AS created_at
+            FROM nodes n
+            INNER JOIN (
+                SELECT * FROM runs
+                WHERE ended_at IS NOT NULL
+                AND run_id = (
+                    SELECT MAX(run_id) FROM runs r2
+                    WHERE r2.node = runs.node AND r2.ended_at IS NOT NULL
+                )
+            ) r ON n.node = r.node
+            ORDER BY n.node
+        """)
         return [dict(row) for row in cursor.fetchall()]
 
     def get_iters(self, run_id: int):
