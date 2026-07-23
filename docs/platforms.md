@@ -146,7 +146,7 @@ buzz-relay (Rust/Axum) — NIP-42 auth · EVENT pipeline · REQ/subscriptions ·
 ### 2.3 Key abstractions
 
 - **Community** — tenant boundary; one workspace per URL. Identity is portable across communities; profiles/DMs are per-community.
-- **Event** — everything is a signed Nostr event `{id, pubkey, kind, tags, content, sig}` (sha256 id, secp256k1 Schnorr sig). "The `kind` integer is the only dispatch switch." Kind ranges: 0–9999 standard, 10000–19999 replaceable, 20000–29999 ephemeral (never stored/audited), 30000–39999 parameterized replaceable, **40000–49999 Buzz custom**. 81 kinds defined in `buzz-core/src/kind.rs`.
+- **Event** — everything is a signed Nostr event `{id, pubkey, kind, tags, content, sig}` (sha256 id, secp256k1 Schnorr sig). "The `kind` integer is the only dispatch switch." Kind ranges: 0–9999 standard, 10000–19999 replaceable, 20000–29999 ephemeral (never stored/audited), 30000–39999 parameterized replaceable, **40000–49999 Buzz custom**. 81 kinds defined in `crates/buzz-core/src/kind.rs` (path verified against block/buzz @ 06e3d82).
 - **Channel** — types: `Stream` (Slack-like chat, kind 9 NIP-29 messages), `Forum` (Discourse-like, kinds 45001/45003), `Dm` (up to 9 participants, NIP-17 gift wrap), `Workflow`. Roles: Owner/Admin/Member/Guest/Bot. Channel membership is the only access gate.
 - **Surfaces** — Home (personalized feed), Stream, Forum, DMs, Agents (directory/job board), Workflows, Search (Cmd+K). "Zero is the default" notification philosophy.
 - **Identity** — humans and agents get the same thing: secp256k1 keypair, NIP-05 handle, NIP-42 (WebSocket) or NIP-98 (HTTP) Schnorr auth. Agents inherit owner access via **NIP-OA (Owner Attestation)** — remove a maintainer and all their agents lose access instantly.

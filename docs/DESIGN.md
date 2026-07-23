@@ -37,10 +37,10 @@ through Buzz.
     branch-as-room channel binding, buzz-protect merge enforcement. Losing
     this layer degrades experience, never history.
 - **Draft-dependency rule.** The core may depend on a Buzz NIP draft only in
-  its schema-on-the-wire aspect — signed events with a documented kind that
-  any relay stores and any client can verify (NIP-OA attestation events
-  qualify). Any dependency on Buzz relay-side enforcement or behavior is
-  Buzz-layer. Where core kinds align with drafts (NIP-AM / NIP-AO metrics),
+  its schema-on-the-wire aspect — signed, documented structure that any relay
+  stores and any client can verify (NIP-OA attestation qualifies: an `auth`
+  tag carried on ordinary signed events, not a distinct event kind). Any
+  dependency on Buzz relay-side enforcement or behavior is Buzz-layer. Where core kinds align with drafts (NIP-AM / NIP-AO metrics),
   the schemas are restated in Lindenmayer's own kind documentation so they
   survive draft churn.
 - Maps tree structure onto channels: Fractal nodes are git branches →
@@ -48,18 +48,21 @@ through Buzz.
   Buzz-layer binding of the same idea to hosted git); channel membership is
   the only access gate.
 - Node identity via NIP-OA owner attestation: each node's keypair is attested
-  by its responsible human. The attestation chain is core (verifiable
-  anywhere); relay-enforced instant revocation — remove the human, the
-  subgraph loses access — is Buzz-layer (see §2).
+  by its responsible human (an `auth` tag — owner pubkey, conditions, BIP340
+  signature — attachable to any event; restated in
+  `docs/kinds/nip-oa-attestation.md`). The attestation chain is core
+  (verifiable anywhere); relay-enforced instant revocation — remove the
+  human, the subgraph loses access — is Buzz-layer (see §2).
 - Fractal `requires_approval` steps surface as signed approval events (core);
   enforcement of approval-gated merges via buzz-protect is Buzz-layer.
 
 ## 2. Identity (persistent nodes)
 
 Fractal provides the graphs and subgraphs; connecting a node to the relay is
-what gives it an identity (an npub, attested per NIP-OA — attestation events
-are core per §1's layering; a plain relay keeps the chain verifiable, while
-instant enforcement of revocation is Buzz-layer). Not all nodes need one —
+what gives it an identity (an npub, attested per NIP-OA — the attestation
+tag chain is core per §1's layering; a plain relay keeps the chain
+verifiable, while instant enforcement of revocation is Buzz-layer). Not all
+nodes need one —
 only the persistent nodes central to executing work. Conceptually, persistent
 nodes are like the "sub-agents" of coding harnesses: named, durable roles with
 track records. Ephemeral worker nodes stay anonymous inside their subgraph;
@@ -77,8 +80,21 @@ them, and evals attach to template versions. That linkage — instance → templ
 version → eval history — is what makes the workforce "versioned and
 evaluated" rather than a pile of one-off prompts.
 
-*(Registration mechanics — kind numbers, update/replace semantics, template
-inheritance — are open; see §8.)*
+Registration mechanics are specified in the kind registry (`docs/kinds/`):
+kind 42050 (template version, append-only regular events — full history
+preserved so versions stay diffable; inheritance via `e`-tag with `inherit`
+marker) and kind 38150 (template pointer, addressable). What an eval
+attaches to is the 42050 version event id; the evals pillar itself remains
+open (§8).
+
+The first live template instance exists: `tree/templates/dev-node/` (v1,
+pinned at commit 9574393) packages the proven dev-node shape — decomposition
+doctrine, haiku-develop/fable-review model policy, architect-consultation
+covenant — hand-rolled in git until `registry` holds template versions as
+signed 42050 events. Instances record the template name, version, and
+template commit pin, which map onto 42050's `template_name`/`version`/
+`git_ref` tags. Template changes are key-component changes: architect
+review, version bump, decision-log entry.
 
 ## 4. Provenance as a training asset
 
@@ -232,13 +248,6 @@ billed at these prices.
 - **Compaction-to-task mapping.** How evergreen-session compactions are
   recorded as events mapping summary → run/iter/step → raw transcript.
   (Raised by root, 2026-07-23.)
-- **Template registration mechanics.** Kind numbers, versioning/replace
-  semantics (parameterized-replaceable vs. append-only), template
-  inheritance, and what exactly an eval attaches to.
-- **Custom kind allocation.** Lindenmayer's event kinds — placement in
-  Buzz's 40000–49999 custom range vs the standard parameterized-replaceable
-  range, and NIP-AM/NIP-AO alignment under §1's draft-dependency rule.
-  Relay-integration research underway (`docs/research/relay-integration/`).
 - **Retention policy defaults.** What per-channel relay retention ships as
   the privacy-preserving default.
 - **Evals pillar.** Sketched only via hand-authored Completion Requirements;
@@ -267,3 +276,5 @@ billed at these prices.
 | 2026-07-23 | Nostr-first output layering (§1): standard Nostr — not Buzz per se — is the bridge's primary integration target; core telemetry is consumable by any compliant relay and client (standard NIPs plus self-documented custom kinds), with Buzz-specific kinds and relay behavior a layer on top. Draft-dependency rule: the core may use a Buzz NIP draft only as schema-on-the-wire (NIP-OA attestation events qualify); relay-enforced revocation, branch-as-room, and buzz-protect are Buzz-layer; NIP-AM/AO alignment is restated in Lindenmayer's own kind docs. | root (directive 5CD20B25) | Approved, no veto — strengthens §6.2 (an event log readable by one v0.4.x product is a weaker source of truth) and hedges Buzz churn at no capability cost. §1 rewritten as two layers; §2 identity and §3 registration wording aligned; §8 kind-allocation question reframed under the rule; relay-integration research children spawned to detail the kind taxonomy and plain-relay degradation. |
 | 2026-07-23 | Security boundary (§6.5): relay enforcement is an optimization, never an assumption — client-side verification from the signed log is the security boundary; Buzz relay-side enforcement is defense-in-depth no client, bridge, or consumer may reason from. Training-pipeline consequence (§4): the extraction pipeline applies attestation-validity filtering itself and labels every corpus row with its author's attestation state at extraction time — stated requirements, not guidance. | root (directive 0FD60E31) | Adopted — elevates the relay-integration research recommendation (aggregate finding 5, `docs/research/relay-integration/README.md`) from research advice to platform principle. §6 principle 5 added; §4 "Extraction-pipeline requirements" paragraph recorded; both cross-reference §1's layering rule. |
 | 2026-07-23 | Commissioning review of the first-ply `core` node contract (`tree/core/NODE.md`, merged at 40a236c), reviewed against the relay-integration research recommendations (`docs/research/relay-integration/`) and §§1, 4, 6, 7. | root (directive 8AFB1E8C) | **Approve-with-conditions** — the contract faithfully carries the minimum relay contract (NIP-01+29+42 and nothing more), verify-don't-infer private-group gating (fail loud), wire-format privacy (§6.1: per-run rollups, ephemeral workers author no events), the §6.5 verification module with §4 extraction-time attestation labeling, §6.2 in config, and collision-check escalation reserved to the architect. Three conditions: (1) the `docs/kinds/` registry includes the NIP-OA schema restatement (`nip-oa-attestation.md`, per event-kinds.md §1.7/§3/§4) — the contract's "never restated" is read as "no re-derived custom kind," not "no restatement doc" — with the upstream NIP-OA/AM/AO drafts pulled from `block/buzz` before those entries are written; nine registry files, not eight. (2) The acceptable-degradation posture (aggregate recommendation 3: merge-gate enforcement as a process concern above the signed events, revocation latency under bridge-refusal + reader-filtering, human surfaces substitutable) is documented in the library's own docs. (3) The completion gate "escalated to the architect and acknowledged" is reworded to gate on the escalation being sent — an acknowledgment only the architect can issue risks stranding a done node `exited`; the architect commits to prompt acknowledgment whenever running. Registry relocation from the research's proposed `docs/research/relay-integration/kinds/` to `docs/kinds/` is approved — implementation-grade spec belongs outside `research/`. Shared-scope boundary recorded: `core` owns `docs/kinds/` file contents; `DESIGN.md` and the rest of `docs/` stay architect-owned. Contract-text edits are proposals to the root (tree/ is the root's to edit). |
+| 2026-07-23 | Custom kind allocation (§8) closed: all eight Lindenmayer kinds — regular 42010/42020/42030/42040/42041/42050, addressable 38110/38150 — verified collision-free against block/buzz @ 06e3d82 (`crates/buzz-core/src/kind.rs`; nearest Buzz neighbor 42000, nothing in 381xx; NIP drafts claim 44200 and ephemeral 24200, no overlap), implemented in `core`, and self-documented in the live registry `docs/kinds/`. Template-registration mechanics closed with it (42050 append-only versions, 38150 pointer, `inherit` e-tag; eval anchor = version event id) — now current truth in §3; only the evals pillar itself stays open. Upstream correction adopted: NIP-OA is an `auth` tag attachable to any event, not an event kind — no kind number exists to collide, and §1/§2 wording plus the `platforms.md` kind.rs path cite are corrected accordingly. | main.core (collision check 456E2D7B); root (directive AF477673) | Confirmed — allocation stands as proposed, no veto. §8 bullets removed; §3 records registry mechanics as decided. |
+| 2026-07-23 | Review of the dev-node template (`tree/templates/dev-node/`, v1, pinned 9574393) — the first live instance of the §3 Node Template concept, hand-rolled in git until `registry` holds template versions as signed events. Reviewed for §3 fidelity (instance→template-version linkage), consultation-trigger calibration, and consistency with the manifest and prior countersigns. | root (directive AF477673) | **Approve-with-conditions** — adopted as the standard shape for future dev nodes; §3 notes the instance. Condition: the recorded linkage line must carry the template commit pin (e.g. `template: dev-node v1 @ 9574393`), not just name+version — a future kind-42050 event needs `template_name`/`version`/`git_ref`, and "this file" resolves to a `git_ref` only by archaeology; with the pin, migration to signed registration is mechanical. Trigger set judged correctly calibrated: covers exactly the architect's remit (key components, principle deviations incl. §6.2 storage and §6.5 verification weakening, new runtime deps) with a decided-matters catch-all, while "STOP only the affected path", "consult on architecture, not style", and SENT-not-acknowledged escalations (honoring the core-commissioning condition on completion gates) bound the bottleneck risk. Non-blocking proposals to root: parameterize the hardcoded first-ply `branch`/`parent` lines before instantiating deeper persistent nodes, and clarify that the fable REVIEW-step pin on a child is applied by the spawning parent (a child cannot edit its own immutable seed). Template text remains the root's to edit. |
