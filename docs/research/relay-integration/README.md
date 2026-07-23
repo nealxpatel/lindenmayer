@@ -66,7 +66,11 @@ did — and labels corpus rows with attestation state at extraction time.
 
 - **Minimum relay contract:** assume NIP-01 + NIP-29 + NIP-42 and nothing
   more. NIP-34, Blossom, and Buzz custom-kind relay behavior are additive,
-  never baseline.
+  never baseline. *(Update: for the relay that carries the core log, DESIGN.md
+  §1 adds two carrier requirements on top of this contract — the relay accepts
+  Lindenmayer's custom kinds and historical `created_at`. Live interop showed
+  the Buzz relay fails both as deployed; see the core-log placement
+  decision-log row, escalation D35D86E8.)*
 - **Verify, don't infer, private-group enforcement:** treat relay-enforced
   `private` read gating as a per-deployment capability — a startup/config
   check or explicit operator attestation — and fail loud (refuse to mark a
