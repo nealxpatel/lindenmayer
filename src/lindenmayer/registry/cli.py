@@ -93,7 +93,7 @@ async def _cmd_publish(args) -> int:
         signed_pointer = keypair.sign_event(pointer_event)
 
         # Publish to relay
-        config = CoreConfig()
+        config = CoreConfig(relay_url=args.relay)
         async with RelayClient(args.relay, keypair, config) as client:
             await client.publish(signed_version)
             print(f"Published version event: {signed_version.id}")
@@ -111,7 +111,7 @@ async def _cmd_list(args) -> int:
     """Execute list command."""
     try:
         keypair = Keypair.generate()
-        config = CoreConfig()
+        config = CoreConfig(relay_url=args.relay)
 
         async with RelayClient(args.relay, keypair, config) as client:
             reader = TemplateReader(client)
@@ -151,7 +151,7 @@ async def _cmd_show(args) -> int:
     """Execute show command."""
     try:
         keypair = Keypair.generate()
-        config = CoreConfig()
+        config = CoreConfig(relay_url=args.relay)
 
         async with RelayClient(args.relay, keypair, config) as client:
             reader = TemplateReader(client)
