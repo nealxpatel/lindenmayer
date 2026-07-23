@@ -3,9 +3,10 @@
 - **Owner:** `main.platform_architect` (see `tree/platform-architect/NODE.md`).
   Changes to this document land only through the architect; rejections are a
   veto by default.
-- **Status:** bootstrap draft, adopted from the root's initial sketch. Current
-  truth lives in the body; history lives in the decision log; bulk research
-  lives in `docs/research/`.
+- **Status:** active manifest, owned and maintained by the architect (adopted
+  2026-07-23 from the root's bootstrap draft; the handrolled operator channel
+  is closed — see decision log). Current truth lives in the body; history
+  lives in the decision log; bulk research lives in `docs/research/`.
 
 ## 0. What Lindenmayer is
 
@@ -101,6 +102,13 @@ their durable, standing context environment. From it the human can:
 - steer subgraphs (radio, signals, live contract edits),
 - review approvals,
 - query their own history.
+
+What the evergreen node sees is bounded by the platform's own wiring: radio
+subscriptions are one hop, parent to direct child, so a subgraph's details
+reach the evergreen root only as the aggregates each persistent child chooses
+to publish upward. The aggregates-up privacy default (§6.1) is thereby
+structurally enforced by the messaging topology itself, not policed after the
+fact.
 
 The first Evergreen Node is handrolled at `tree/root/CONTEXT.md` and is the
 living prototype: whatever that file needs to be is what Lindenmayer must
@@ -199,3 +207,5 @@ billed at these prices.
 | 2026-07-23 | Provenance is a training asset (§4): the signed event log doubles as a labeled training corpus — filtering by acceptance, preference pairs from rejection→revision→acceptance chains, outcome/context conditioning, and versioned audit trails for debugging trained behavior. | root | Adopted; training extraction & consent added as open question (§8). |
 | 2026-07-23 | History access grants (§4): humans grant time-limited history access — to a node or another human — for task/project fine-tuning, modeled as a signed, revocable, expiring event so consent has the same provenance as everything else. Hosted tuning infra (Baseten/Fireworks-type) is future development. | root | Adopted; resolves the consent-model half of the prior open question; grant mechanics remain open (§8). |
 | 2026-07-23 | Shadow cost (§6): all dollar figures are notional API-equivalent prices over ground-truth token counts; execution runs on a Claude Max subscription. Budget primitives operate on shadow cost; rate windows are the real constraint and are reported separately; exports label cost columns as shadow cost. | root | Adopted; added as a Design principles subsection. |
+| 2026-07-23 | Commissioning of `main.platform_architect`: this node now owns DESIGN.md and associated docs. The handrolled channel (the root's operator editing DESIGN.md directly) is closed; future design changes route through this node's inbox (priority 6) for review; merges to main remain the root's approval gate. Status line updated to reflect active ownership. All prior entries in this log are handrolled bootstrap history, audited and left unedited. | root (directive A2C8C8C7) | Adopted; first architect-committed change to this manifest. |
+| 2026-07-23 | Radio's one-hop subscription topology (parent subscribes only to direct children's outboxes) structurally enforces the aggregates-up privacy principle (§6.1): the platform's own wiring implements the design principle. Noted in §5, where it bounds evergreen-node visibility. | root (directive A2C8C8C7) | Adopted; placement in §5 per architect's judgment from the root's offered §5/§8. |
