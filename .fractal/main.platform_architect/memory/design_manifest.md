@@ -115,3 +115,17 @@ updated: 2026-07-23T13:00:07Z
   source rows; replay tests assert on ids); (3) harvester isolated behind an
   adapter reading only append-only usage fields (contains §8 compaction
   coupling). Bridge starts on root's go after applying conditions.
+
+## Registry commissioning (first ply)
+
+- `tree/registry/NODE.md` (pinned 1c0409f, second dev-node-template
+  instantiation, linkage `dev-node v1 @ 9f147a3`) countersigned
+  **approve-with-conditions** (root request 41A80499, verdict reply 2C19A9A0;
+  decision-log row in §9; §3 now records both instantiations). Relay-as-registry
+  (no local index) APPROVED under §6.2, extending relay-as-cursor. Conditions:
+  (1) instance-linkage association read-side only, terminates at the 42050
+  version event id — no new kinds/wire artifacts/eval schema (reserves §8
+  evals pillar); (2) reader orders version history by `version` tag,
+  `created_at` informational (git timestamps non-monotonic); interpretive
+  ruling logged, kind doc unchanged (core-owned). Registry starts on root's
+  go after applying conditions.
