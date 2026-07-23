@@ -129,6 +129,28 @@ context stays traceable (open question, §8).
    default (a platform parameter); disagreements resolve as recorded
    conversation, never silent override.
 
+### Shadow cost
+
+All dollar figures in this project are *shadow costs*: real, server-reported
+token counts priced at public API rates (Fractal's LiteLLM pricing table),
+while execution actually runs on a Claude Max subscription. Nothing was
+billed at these prices.
+
+- Token counts are ground truth (reported by the API in stream events, never
+  estimated locally). Dollar figures are derived, notional, API-equivalent
+  prices.
+- Fractal's budget primitives (`max_cost`, reserve mode, cascading finish)
+  operate on shadow cost and remain fully functional as steering and safety
+  mechanisms — a budget cap is a real cap on work, even if the dollars are
+  notional.
+- Shadow cost is the right unit for the control plane's analytics: it is
+  comparable across nodes, templates, models, and time, independent of how
+  any given org pays (subscription, API, or enterprise agreement).
+- The binding constraint on subscription execution is not dollars but rate
+  windows; throttling events are recorded and reported separately from cost.
+- Every exported dataset (parquet snapshots, demo dashboards) labels cost
+  columns as shadow cost. No figure is presented as actual spend.
+
 ## 7. Development & demo strategy
 
 - Developed by a Fractal tree from day one; the demo observes the tree that
@@ -176,3 +198,4 @@ context stays traceable (open question, §8).
 | 2026-07-23 | This manifest bootstrapped from the root's design sketch (bridge, identity, templates, evergreen node, principles, dev/demo strategy). | root | Adopted as draft; §3 registration sentence completed by inference, pending root review. |
 | 2026-07-23 | Provenance is a training asset (§4): the signed event log doubles as a labeled training corpus — filtering by acceptance, preference pairs from rejection→revision→acceptance chains, outcome/context conditioning, and versioned audit trails for debugging trained behavior. | root | Adopted; training extraction & consent added as open question (§8). |
 | 2026-07-23 | History access grants (§4): humans grant time-limited history access — to a node or another human — for task/project fine-tuning, modeled as a signed, revocable, expiring event so consent has the same provenance as everything else. Hosted tuning infra (Baseten/Fireworks-type) is future development. | root | Adopted; resolves the consent-model half of the prior open question; grant mechanics remain open (§8). |
+| 2026-07-23 | Shadow cost (§6): all dollar figures are notional API-equivalent prices over ground-truth token counts; execution runs on a Claude Max subscription. Budget primitives operate on shadow cost; rate windows are the real constraint and are reported separately; exports label cost columns as shadow cost. | root | Adopted; added as a Design principles subsection. |
