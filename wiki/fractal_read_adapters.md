@@ -1,6 +1,6 @@
 ---
 name: fractal_read_adapters
-desc: Read-only adapters for accessing Fractal's SQLite database and transcript files
+desc: Read-only adapters for accessing Fractal's SQLite database and transcript files.
 tags: [adapters, sqlite, transcripts, read-only]
 sources: []
 created: 2026-07-23T19:06:51Z

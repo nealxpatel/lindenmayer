@@ -1,6 +1,6 @@
 ---
 name: bridge_implementation
-desc: Bridge node delivers Fractal observability as signed Nostr events
+desc: Bridge node delivers Fractal observability as signed Nostr events.
 tags: [bridge, nostr, fractal, observability]
 sources: [tree/bridge/NODE.md, docs/DESIGN.md, docs/platforms.md]
 created: 2026-07-23T19:00:00Z
@@ -18,12 +18,14 @@ Five deliverables (all in `src/lindenmayer/bridge/`):
 ### 1. Fractal Read Adapters (`adapters/`)
 
 **FractalDBReader** (`sqlite.py`):
+
 - WAL-safe read-only access to per-tree SQLite (Fractal's persistence layer)
 - Tables: nodes, runs, iters, steps, events, messages
 - URI mode connection prevents write races; never modifies DB
 - Methods: `get_nodes()`, `get_runs(node)`, `get_iters(run_id)`, `get_steps(iter_id)`, `get_latest_event(node)`
 
 **TranscriptUsageHarvester** (`transcripts.py`):
+
 - Harvest per-request token usage from agent session JSONL transcripts
 - Reads ONLY append-only fields (input_tokens, output_tokens, cache_*) that survive transcript compaction
 - Never parses conversational structure; focuses on cost accounting
@@ -47,34 +49,40 @@ Maps Fractal rows to six core event kinds:
 ### 3. Identity Module (`identity.py`)
 
 **load_node_keypair(node_name)**:
+
 - Loads from `~/.lindenmayer/keys/<node>.secret` if present
 - Falls back to SHA256(node_name + LINDENMAYER_KEY_SEED env var) derivation
 - Returns None if node is ephemeral (not persistent)
 - Uses core's Keypair class (BIP-340 Schnorr via coincurve)
 
 **check_attestation_valid(pubkey)**:
+
 - Checks NIP-OA owner attestation (core's attestation format)
 - Rejects if revocation marker exists at `~/.lindenmayer/revoked/<pubkey>.revoked`
 - Checks attestation JSON for expiration and revoked flag
 - Default: attestation missing → valid (optimistic assumption)
 
 **refuse_if_revoked(pubkey)**:
+
 - Gates publisher: raises IdentityError if attestation invalid
 - Documented degradation posture: closes new activity at the source when key is compromised
 
 ### 4. Publisher (`publisher.py`)
 
 **Stateless Resume Pattern**:
+
 - On startup: `resume_from_relay()` queries relay for own latest events (filtered by keypair)
 - Returns dict mapping kind → latest created_at timestamp
 - No local state files; relay is the cursor
 
 **Deterministic Event IDs**:
+
 - Event content and `created_at` derived from Fractal source rows (source timestamps, never wall clock)
 - Replay after cursor regression reproduces identical event IDs
 - Enables idempotent publishing and conflict detection (architect condition 2)
 
 **Methods**:
+
 - `publish_event(event)`: Publish single signed event; skip if already published (tracked in `_published_event_ids`)
 - `publish_events(events)`: Publish list in order
 - `idempotent_replay(events)`: Wrapper ensuring deterministic IDs and no duplicates on restart
@@ -84,6 +92,7 @@ Maps Fractal rows to six core event kinds:
 **Command**: `lindenmayer-bridge run --tree <path> --relay <url> [--config <file>] [--log-level <level>]`
 
 **Behavior**:
+
 - Validates tree directory and `.fractal/main/.db` existence
 - Loads CoreConfig (default or from file)
 - Initializes FractalDBReader and opens DB
