@@ -9,40 +9,35 @@ Validates:
 
 from __future__ import annotations
 
-import asyncio
-from typing import AsyncIterator
-
 import pytest
 
 from lindenmayer.bridge.publisher import Publisher, PublisherError
-from lindenmayer.core.event import Event, compute_event_id
+from lindenmayer.core.event import Event
 from lindenmayer.core.keys import Keypair
 from lindenmayer.core.relay import RelayClient
-from tests.relay_mock import MockRelay
+from lindenmayer.core.config import CoreConfig
+from relay_mock import MockRelay
 
 
-EXAMPLE_PUBKEY = "3f0ff4ce8fa9b8006d754e26e73b8562711f264efc45ec4a751ba735d6221513"
 EXAMPLE_SECRET = "0000000000000000000000000000000000000000000000000000000000000001"
 
 
 @pytest.fixture
-async def mock_relay() -> AsyncIterator:
+async def mock_relay():
     """Create and start a mock relay for testing."""
     async with MockRelay() as relay:
         yield relay
 
 
 @pytest.fixture
-def keypair() -> Keypair:
+def keypair():
     """Create a test keypair."""
     return Keypair.from_hex(EXAMPLE_SECRET)
 
 
 @pytest.fixture
-async def relay_client(mock_relay: MockRelay, keypair: Keypair):
+async def relay_client(mock_relay, keypair):
     """Create a relay client connected to the mock relay."""
-    from lindenmayer.core.config import CoreConfig
-
     config = CoreConfig.default()
     client = RelayClient(mock_relay.url, keypair, config)
     await client.connect()
@@ -51,7 +46,7 @@ async def relay_client(mock_relay: MockRelay, keypair: Keypair):
 
 
 @pytest.mark.asyncio
-async def test_publisher_deterministic_ids(keypair: Keypair, relay_client: RelayClient):
+async def test_publisher_deterministic_ids(keypair, relay_client):
     """Event ids are deterministic from source timestamps, not wall clock."""
     publisher = Publisher(relay_client, keypair)
 
@@ -79,7 +74,7 @@ async def test_publisher_deterministic_ids(keypair: Keypair, relay_client: Relay
 
 
 @pytest.mark.asyncio
-async def test_publisher_publish_event(keypair: Keypair, relay_client: RelayClient):
+async def test_publisher_publish_event(keypair, relay_client):
     """Publishing a signed event succeeds."""
     publisher = Publisher(relay_client, keypair)
 
@@ -97,7 +92,7 @@ async def test_publisher_publish_event(keypair: Keypair, relay_client: RelayClie
 
 
 @pytest.mark.asyncio
-async def test_publisher_reject_unsigned(keypair: Keypair, relay_client: RelayClient):
+async def test_publisher_reject_unsigned(keypair, relay_client):
     """Publishing unsigned event raises error."""
     publisher = Publisher(relay_client, keypair)
 
@@ -114,7 +109,7 @@ async def test_publisher_reject_unsigned(keypair: Keypair, relay_client: RelayCl
 
 
 @pytest.mark.asyncio
-async def test_publisher_idempotent_replay(keypair: Keypair, relay_client: RelayClient):
+async def test_publisher_idempotent_replay(keypair, relay_client):
     """Replay is idempotent: same events produce same ids, no duplicates."""
     publisher = Publisher(relay_client, keypair)
 
@@ -147,7 +142,7 @@ async def test_publisher_idempotent_replay(keypair: Keypair, relay_client: Relay
 
 
 @pytest.mark.asyncio
-async def test_publisher_resume_from_relay(keypair: Keypair, relay_client: RelayClient):
+async def test_publisher_resume_from_relay(keypair, relay_client):
     """Resume queries relay for own latest events."""
     publisher = Publisher(relay_client, keypair)
 
@@ -172,7 +167,7 @@ async def test_publisher_resume_from_relay(keypair: Keypair, relay_client: Relay
 
 
 @pytest.mark.asyncio
-async def test_publisher_no_duplicate_publish(keypair: Keypair, relay_client: RelayClient):
+async def test_publisher_no_duplicate_publish(keypair, relay_client):
     """Same event is not published twice."""
     publisher = Publisher(relay_client, keypair)
 
