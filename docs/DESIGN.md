@@ -126,7 +126,10 @@ context stays traceable (open question, §8).
    collaboration platform for humans and AI as one integrated organizational
    graph. No arbitrary search of histories: access follows the graph —
    aggregates flow up, details stay in the subgraph. Privacy is a default,
-   not a feature.
+   not a feature. Whether a subgraph publishes its raw node-session
+   transcripts is a per-subgraph platform parameter (same family as the
+   governance-mode parameter, §6.4); the platform-wide default is
+   private-in-subgraph.
 2. **No new storage systems.** The signed event log is the history. Retention
    is relay policy, per channel. Source-of-truth data stays in Fractal's
    SQLite and the Buzz relay; parquet files in `data/` are snapshot exports
@@ -164,6 +167,10 @@ billed at these prices.
 - Developed by a Fractal tree from day one; the demo observes the tree that
   builds Lindenmayer, so dashboards show real subgraphs, merge-acceptance,
   and cost data.
+- This dev tree is explicitly opted in to transcript publication (the
+  per-subgraph parameter in §6.1): hook-synced node-session transcripts
+  (`transcripts/`) are committed and published — for this tree they are the
+  demo data. The platform-wide default remains private-in-subgraph.
 - Decomposition principles for the dev tree: nodes own mergeable,
   directory-scoped artifacts; shared contracts land before parallel children
   spawn; the tree mirrors intended module boundaries; plan one ply and let
@@ -202,10 +209,11 @@ billed at these prices.
 | Date | Decision | Requested by | Resolution |
 |---|---|---|---|
 | 2026-07-23 | Governance mode: architect rejection is a veto by default; a rejection forces the human to re-examine the principle at stake and adjust context/contracts in recorded conversation on the architect's node. Softer modes (advisory, recorded override) are per-subgraph platform parameters. | root | Adopted; encoded in `tree/root/CONTEXT.md` and `tree/platform-architect/NODE.md`. |
-| 2026-07-23 | Evergreen continuity: compactions must map back to the task (run/iter/step) they summarize, as a trace to raw context. | root | Accepted as open design question (§7); noted in the architect's contract. |
+| 2026-07-23 | Evergreen continuity: compactions must map back to the task (run/iter/step) they summarize, as a trace to raw context. | root | Accepted as open design question (§8); noted in the architect's contract. |
 | 2026-07-23 | This manifest bootstrapped from the root's design sketch (bridge, identity, templates, evergreen node, principles, dev/demo strategy). | root | Adopted as draft; §3 registration sentence completed by inference, pending root review. |
 | 2026-07-23 | Provenance is a training asset (§4): the signed event log doubles as a labeled training corpus — filtering by acceptance, preference pairs from rejection→revision→acceptance chains, outcome/context conditioning, and versioned audit trails for debugging trained behavior. | root | Adopted; training extraction & consent added as open question (§8). |
 | 2026-07-23 | History access grants (§4): humans grant time-limited history access — to a node or another human — for task/project fine-tuning, modeled as a signed, revocable, expiring event so consent has the same provenance as everything else. Hosted tuning infra (Baseten/Fireworks-type) is future development. | root | Adopted; resolves the consent-model half of the prior open question; grant mechanics remain open (§8). |
 | 2026-07-23 | Shadow cost (§6): all dollar figures are notional API-equivalent prices over ground-truth token counts; execution runs on a Claude Max subscription. Budget primitives operate on shadow cost; rate windows are the real constraint and are reported separately; exports label cost columns as shadow cost. | root | Adopted; added as a Design principles subsection. |
 | 2026-07-23 | Commissioning of `main.platform_architect`: this node now owns DESIGN.md and associated docs. The handrolled channel (the root's operator editing DESIGN.md directly) is closed; future design changes route through this node's inbox (priority 6) for review; merges to main remain the root's approval gate. Status line updated to reflect active ownership. All prior entries in this log are handrolled bootstrap history, audited and left unedited. | root (directive A2C8C8C7) | Adopted; first architect-committed change to this manifest. |
 | 2026-07-23 | Radio's one-hop subscription topology (parent subscribes only to direct children's outboxes) structurally enforces the aggregates-up privacy principle (§6.1): the platform's own wiring implements the design principle. Noted in §5, where it bounds evergreen-node visibility. | root (directive A2C8C8C7) | Adopted; placement in §5 per architect's judgment from the root's offered §5/§8. |
+| 2026-07-23 | Node-session transcripts as published telemetry: whether a subgraph publishes its raw node-session transcripts is a per-subgraph platform parameter (same family as governance mode); the platform-wide default is private-in-subgraph, consistent with §6.1. This dev tree is explicitly opted in — hook-synced transcripts are committed and published as the demo data. | root (directive 08A7AF4B) | Adopted, no veto — the private default is §6.1 applied to transcripts. Parameter + default recorded in §6.1; dev-tree opt-in recorded in §7. |
