@@ -28,6 +28,8 @@ block, with the units digit reserved for members of the same family:
 | 42040 / 42041 | approval request / verdict |
 | 42050 | template version |
 | 42060 | session compaction |
+| 42070 | commission (allocated, unbuilt) |
+| 42080 / 42081 | authority grant / grant revocation (allocated, unbuilt) |
 
 Addressable kinds sit in 381xx: 38110 node state pointer, 38150 template
 pointer.
@@ -36,6 +38,15 @@ A new *family* takes the next decade; a new member of an existing family takes
 the next units digit. Allocation is the architect's call, and every allocation
 is collision-checked against `block/buzz` before its `docs/kinds/` entry is
 written.
+
+The last three are **allocated but unbuilt** — numbers and conditions are
+fixed, the `docs/kinds/` entries are not yet written, and evergreen v1's kind
+set stays closed at the nine above them. Two design constraints ride with
+them. A **grant revocation is its own append-only event**, never a replaceable
+update to the grant: a replaced grant would clobber the evidence that
+authority once existed, the same reasoning that kept template versions out of
+replaceable kind 10100. And a **commission (42070) names the authorizing
+grant**, so the authorization chain is resolvable from the event alone.
 
 ## Buzz cross-post rules
 

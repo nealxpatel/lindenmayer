@@ -14,10 +14,24 @@ updated: 2026-07-23T13:00:07Z
   changes arrive in this node's inbox at priority 6; merges to main remain the
   root's approval gate.
 - Status line reads "active manifest, owned and maintained by the architect".
-- Structure: §0 what Lindenmayer is, §1 bridge, §2 identity, §3 node
-  templates, §4 provenance/training + history grants, §5 evergreen node, §6
-  design principles + shadow cost, §7 dev/demo strategy, §8 open questions,
-  §9 decision log.
+- Structure: §0 what Lindenmayer is (+ vocabulary block: Fractal / tree /
+  capability), §1 bridge, §2 identity (role-scoped, × version, key roles),
+  §3 node templates (+ explicit adoption), §4 provenance/training + grants
+  (one kind, three uses), §5 evergreen node — §5.1 v1 read plane, §5.2
+  compaction, §5.3 commissioning/intake/@mention (all **v2**), §6 design
+  principles + shadow cost, §7 dev/demo strategy, §8 open questions, §9
+  decision log.
+- **§5.1 vs §5.3 is the trap to watch.** The v1/v2 line runs *through* the
+  "commission trees" capability, not around it: the §5.1 capability table's
+  v1 column must stay catalog-only, while the commission itself sits in §5.3
+  as v2. I wrote the commission into that v1 cell once and caught it at
+  review — `evergreen` reads that table as its scope, so the error would have
+  pulled v2 work into a v1 contract.
+- **Three keys, two of them called "owner."** Author key (human, signs
+  template versions) / durable owner key (org or seat, what NIP-OA attests a
+  node *to*, and the `auth` tag's field name) / node key. §2 records the
+  convention: unqualified "owner key" means the durable key; template
+  authorship is always "author".
 - §1 is now **Nostr-first two-layer** (root directive 5CD20B25, approved):
   Nostr core (standard NIPs + self-documented custom kinds, any-relay
   consumable) / Buzz layer (human surfaces, branch-as-room, buzz-protect).
