@@ -112,6 +112,34 @@ premise, inverted. There the trap was accepting a child's *negative*
 existence claim; here it was my own *positive* one. Both are premises, not
 findings, and both propagated into the manifest before being checked.
 
+## Self-correction: §8's "no relay is reachable" was false
+
+The §8 relay bullet claimed no relay is reachable from inside a node run and
+used that to justify a **tree-wide gating rule** (no node's completion may be
+gated on live relay data). Measured during review: `nc -z localhost 7100`
+succeeds, `8080` does not. A dev relay was answering the whole time the claim
+stood — `docs/research/evergreen/inventory.md:94` records it holding 12 node
+identities with live 42010/42020 events, and `evergreen`'s `6D3D3C19`
+measurements were taken against it.
+
+§8 now gates on **reproducibility, not reachability**: no `deploy/`, no
+compose file, no deployment TOML, so the endpoint is operator ambient state a
+node cannot discover — and the only relay default recorded in code
+(`registry/cli.py:35`, `ws://localhost:8080`) points at a closed port, while
+`bridge` requires `--relay` and `CoreConfig.relay_url` has no default. The
+gating rule survives; its justification changed. Closing §8 means a checked-in
+deployment plus one endpoint of record.
+
+**This is the third instance of one failure family**, and naming it precisely
+is the point: a false premise accepted from a child (compaction), my own
+positive claim over-implying reachability ("registration is live"), and now an
+*absence* claim asserted without measurement. Absence claims are the ones that
+never get checked, because there is nothing to look at — and this one had
+already hardened into a constraint other nodes were operating under. The
+generalized rule: **any claim that something does not exist, is not reachable,
+or is not recorded gets one command run against it before it enters the
+manifest.** Each of the three cost one cheap command to check.
+
 ## Audit findings
 
 - Body cross-references verified correct: §4→§1, §4→§6.1, §4→§6.5, §5→§8,
