@@ -20,6 +20,10 @@ prototype of the surface Lindenmayer will eventually maintain automatically.
 - `platform-architect/` — the first agent node (branch `main.platform_architect`;
   Fractal branch segments allow only `[A-Za-z0-9_]`, hence the underscore).
   `NODE.md` is its Fractal task contract.
+- `evergreen/` — first-ply product surface (branch `main.evergreen`): the
+  read plane over the signed log; generates the standing context surface.
+- `templates/` — versioned Node Templates (DESIGN.md §3), registered as
+  signed 42050 events via the registry.
 - `core/` — the first-ply foundation node (branch `main.core`): event kinds,
   relay client, config. Merges first; the rest of the ply builds against it.
 
