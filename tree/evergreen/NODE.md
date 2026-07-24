@@ -19,6 +19,13 @@ anything else; then §5.2, §6 principles), then
 registry's shipped APIs (`src/lindenmayer/core/`, `src/lindenmayer/registry/`
 — build against them, never modify them).
 
+**Your charter is v1 and v1 only.** DESIGN.md §5.3 (commissioning, intake,
+the requester front door, kinds 42070/42080/42081) is **evergreen v2** —
+decided now because this contract is written against it, but explicitly NOT
+yours to build. Your kind set stays **closed at the nine named in deliverable
+1**; do not add 42070, 42080, or 42081, and do not build any write path.
+Design that assumes v2 is a consultation, not a deliverable.
+
 **The ruling that defines your scope: evergreen v1 is the READ PLANE.**
 Fractal's own CLI remains the write plane. You ship no radio-send UI, no
 signal API, no live-edit UI, and no node-spawn bridge. Those are wrappers
