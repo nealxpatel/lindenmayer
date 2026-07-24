@@ -31,7 +31,13 @@ through Buzz.
     wire format, NIP-29 group channels, NIP-34 git events), plus
     Lindenmayer's own custom kinds, self-documented for portability.
     Telemetry, radio aggregates, approval events, and template registration
-    live here. The core log's carrier is the **Lindenmayer relay**: a
+    live here. Custom kinds are allocated one decade per family in the 420xx
+    regular block — 42010 lifecycle, 42020 accounting, 42030 digest, 42040/1
+    approval, 42050 template, 42060 compaction — with the units digit
+    reserved for members of the same family, so a new family takes the next
+    decade and allocation stays mechanical. Every allocation is
+    collision-checked against `block/buzz` before its registry entry is
+    written. The core log's carrier is the **Lindenmayer relay**: a
     permissive, standard Nostr relay (strfry/khatru-class) deployed with the
     tree, meeting the minimum relay contract (NIP-01 + NIP-29 + NIP-42, per
     the relay-integration aggregate) plus two carrier requirements the Buzz
@@ -51,6 +57,29 @@ through Buzz.
     source timestamp and the core event id carried in tags, deduplicated by
     that core-id reference — never the record. Losing this layer degrades
     experience, never history.
+
+    **Cross-post rules (v1).** Two invariants bind every cross-post:
+
+    - *Audience invariant.* A cross-post may never widen the audience of its
+      source event. Channel membership is the only access gate, so posting a
+      subgraph event into a parent channel is a privacy widening (§6.1).
+      Kind 42030 is the sole kind eligible for a parent channel, because it
+      *is* the upward aggregate.
+    - *Forward-only.* Buzz receives cross-posts in real time and never
+      backfill: the ±15-min drift gate makes historical posting infeasible,
+      and re-issuing old events with fresh timestamps would misrepresent
+      history. History lives on the Lindenmayer relay.
+
+    Tag elements are strings (NIP-01), so the source reference is carried
+    flat, never as an embedded JSON object:
+    `["e", "<source_id>", "", "lindenmayer-source"]`, `["source_kind", "…"]`,
+    `["source_created_at", "<unix>"]`.
+
+    The v1 set: 42010 and 42020 → `KIND_STREAM_MESSAGE` (9) in the subgraph
+    channel; 42040/42041 → stream message in an approvals-inbox NIP-29 group;
+    42030 → parent channel where the subgraph publishes upward; 38150 and
+    42050 not surfaced (see decision log — template versions must not be
+    published as replaceable agent-profile events).
 - **Draft-dependency rule.** The core may depend on a Buzz NIP draft only in
   its schema-on-the-wire aspect — signed, documented structure that any relay
   stores and any client can verify (NIP-OA attestation qualifies: an `auth`
@@ -102,20 +131,29 @@ marker) and kind 38150 (template pointer, addressable). What an eval
 attaches to is the 42050 version event id; the evals pillar itself remains
 open (§8).
 
-The first live template instance exists: `tree/templates/dev-node/` (v1,
-pinned at commit 9f147a3 — the pin-bearing revision that applied the
-architect's linkage condition) packages the proven dev-node shape —
-decomposition doctrine, haiku-develop/fable-review model policy,
-architect-consultation covenant — hand-rolled in git until `registry` holds
-template versions as signed 42050 events. Instances record the template
-name, version, and template commit pin, which map onto 42050's
-`template_name`/`version`/`git_ref` tags. Two instantiations exist, both
-carrying the linkage line `dev-node v1 @ 9f147a3` and commissioning-reviewed
-per the decision log: the bridge node contract (`tree/bridge/NODE.md`) and
-the registry node contract (`tree/registry/NODE.md`) — the latter is the
-node that will hold these template versions as signed 42050 events.
-Template changes are key-component changes: architect review, version bump,
-decision-log entry.
+The first live template exists: `tree/templates/dev-node/` packages the proven
+dev-node shape — decomposition doctrine, model policy, architect-consultation
+covenant. Instances record the template name, version, and template commit
+pin, which map onto 42050's `template_name`/`version`/`git_ref` tags. Two
+instantiations exist, both commissioning-reviewed per the decision log: the
+bridge node contract (`tree/bridge/NODE.md`) and the registry node contract
+(`tree/registry/NODE.md`).
+
+**Registration is live, not future.** `registry` holds template versions as
+signed 42050 events today: dev-node **v2** is registered (version event
+`0f8d0910`, pin `c6696b7`) — the registry's first real version bump, read back
+and verified alongside v1. Hand-rolled git pinning was the interim; the signed
+registry is now the record. Template changes remain key-component changes:
+architect review, version bump, decision-log entry.
+
+**Model policy is a template parameter, not a platform constant.** What the
+template fixes is the *shape*: the orchestrator writes precise work orders, a
+cheaper tier executes them, a stronger tier reviews the result. Which tiers
+fill those slots is tunable and has already been retuned once (see decision
+log). Current assignment: orchestration and review on the stronger tier,
+development on the cheaper one. Surfaces that display the policy must read the
+live assignment rather than restate it — a restated tier table goes stale
+silently, and has.
 
 ## 4. Provenance as a training asset
 
@@ -183,10 +221,78 @@ The first Evergreen Node is handrolled at `tree/root/CONTEXT.md` and is the
 living prototype: whatever that file needs to be is what Lindenmayer must
 eventually generate and maintain automatically.
 
-Evergreen sessions raise the continuity problem: long-lived sessions compact,
-and a compaction is a derived view that must keep a pointer to its source —
-each compacted summary should map to the run/iter/step it covers so raw
-context stays traceable (open question, §8).
+### 5.1 What evergreen is at v1
+
+**Evergreen v1 is the read plane; Fractal's own CLI remains the write plane.**
+v1 ships two things and no write path: a query surface over the signed log,
+and a generator/maintainer of the standing context surface.
+
+The write-side gaps are real but they are not ours to fill. Radio send,
+signals, live `NODE.md` edits, and node spawn are Fractal capabilities that
+already exist and work; wrapping them would add a second control path with no
+new capability, and an orchestration layer over Fractal's spawn API drifts
+straight at §6.3. That signal routing is "Fractal CLI only" is not a gap —
+it is the boundary holding. The read side is the opposite case: most of what
+the prototype needs is reconstructable from the signed log, and none of it has
+a query surface today.
+
+| §5 capability | v1 ships (read) | Stays Fractal CLI (write) |
+|---|---|---|
+| Commission trees | template catalog: versions, history, instance linkage | the spawn itself |
+| Steer subgraphs | situational awareness: aggregates, budgets, pending gates | radio send, signals, live edits |
+| Review approvals | the queue: 42040 pending, 42041 verdicts | the verdict (a radio reply) |
+| Query own history | owned fully — this *is* the capability | — |
+
+The generated context surface is a composite: a human-authored preamble
+(mission, phase, non-negotiables, governance mode, pointers) plus a generated
+situational block derived from queries. That is what the handrolled prototype
+already is, minus the hand maintenance.
+
+v1 holds no local index — it reconstructs from the relay and Fractal's SQLite
+on demand, extending the relay-as-cursor (bridge) and relay-as-registry
+(registry) precedents to **relay-as-context** (§6.2). Out of scope for v1, so
+it is not silently dropped: node-spawn API, radio-send UI, live-edit UI,
+signal API, consent-grant queries (§4 mechanics remain open, §8), and any
+wire-visible decision-log kind — the decision log stays a section of this
+manifest.
+
+### 5.2 Session continuity (compaction)
+
+Evergreen sessions compact, and a compaction is a derived view that must keep
+a pointer to its source. Each compaction publishes a **kind 42060** event
+carrying task coordinates in tags (`branch`, `run`, `iter`, `step`, the
+session id, and the compacted span) plus an `e` tag with a `summary-of` marker
+resolving to the step's own lifecycle event. Content carries metrics and a
+**summary hash — never summary text**, and the pointer resolves to the node's
+own step event, so a child's compaction stays in its subgraph and only
+digests roll up (§6.1).
+
+**Detection reads the harness's own marker, which already exists.** Transcripts
+carry an append-only `system` record with a `compactMetadata` object —
+`trigger`, `preTokens`, `postTokens`, `durationMs`, `cumulativeDroppedTokens`,
+and preserved-segment identifiers. Nothing upstream needs to change and
+nothing needs inferring: `preTokens`/`postTokens` *are* the compaction metrics
+42060 reports.
+
+A secondary signal corroborates it where the marker is absent (older
+transcripts, or a harness that stops emitting it): total prompt size
+(`input_tokens` + `cache_read_input_tokens` + `cache_creation_input_tokens`)
+grows across a session and drops sharply at a compaction. The third term is
+required — the two-term form tracks cache turnover, not context, and fires
+several false positives per session as the prompt cache expires and refills.
+
+Every 42060 event therefore carries a `detection` tag recording which signal
+produced it — `harness-marker` (primary, attested) or `usage-discontinuity`
+(fallback, inferred) — so a reader can grade the claim rather than trust it
+(§6.5).
+
+**Harvester boundary.** The bridge's transcript adapter may read append-only
+structured *metadata* records, `compactMetadata` among them, in addition to
+per-request usage fields. It still may not parse conversational structure, and
+in particular must never read the compact summary body: the harness writes the
+summary text into the transcript, and 42060 carries only its hash. This
+extends the adapter's original usage-fields-only boundary; the prohibition
+that matters — no conversational content — is unchanged.
 
 ## 6. Design principles
 
@@ -260,6 +366,14 @@ billed at these prices.
   spawn; the tree mirrors intended module boundaries; plan one ply and let
   nodes decide their own children; hand-authored Completion Requirements per
   NODE.md prefigure the evals pillar.
+- **Decomposition economics rest on a ratio, not on specific tiers.** The
+  doctrine holds because execution is cheaper than review and orchestration,
+  and any tier assignment preserving that ordering preserves the doctrine
+  (§3). What a retiering does change is absolute burn per child, so
+  cap-sizing guidance — how large a leaf's cap must be to cover its solve plus
+  wind-down — has to be restated against burn observed at the tiers actually
+  in use. The existing guidance was calibrated on the cheapest tier and is
+  stale; replacement figures wait on observation rather than estimation.
 - **First ply:** `core` (event kinds, relay client, config — merges first),
   `bridge`, `registry`, `evergreen`, `evals` (spawned late; depends on bridge
   events).
@@ -268,9 +382,6 @@ billed at these prices.
 
 ## 8. Open questions
 
-- **Compaction-to-task mapping.** How evergreen-session compactions are
-  recorded as events mapping summary → run/iter/step → raw transcript.
-  (Raised by root, 2026-07-23.)
 - **Retention policy defaults.** What per-channel relay retention ships as
   the privacy-preserving default.
 - **Evals pillar.** Sketched only via hand-authored Completion Requirements;
@@ -312,3 +423,7 @@ billed at these prices.
 | 2026-07-23 | Commissioning review of the `registry` node contract (`tree/registry/NODE.md`, pinned 1c0409f) — the second instantiation of dev-node template v1 (@ 9f147a3), reviewed for template fidelity, design fidelity (§3 registry mechanics, §6.1, §6.2, §6.5, deterministic-id precedent), buildability under haiku economics, and coupling with the reserved evals pillar (§8). Includes the explicit §6.2 ruling requested on the no-local-index posture: **the relay is the registry** — reads reconstruct template history from 42050/38150 queries; no local index files. | root (request 41A80499) | **Approve-with-conditions** (verdict 2C19A9A0) — template fidelity verified: linkage pin `dev-node v1 @ 9f147a3` resolves to the post-condition template; contract-disagreement clause present in the Instructions opening (the bridge condition honored proactively); covenant/model-policy/doctrine operative content intact, with welcome strengthenings ("the relay IS the registry; no local index files", kind-docs-are-decided-matters, registry-level-dep-is-automatically-a-consultation, and the §6.1 adaptation: templates publish openly as shared assets, instance linkage leaks nothing beyond 42010/42030). Relay-as-registry is APPROVED as §6.2-clean in both directions, extending the bridge's relay-as-cursor precedent: 42050 content stays thin (`git_ref` points at the artifact — no second copy of template content) and 38150 pointer loss degrades to replaying 42050 history, never data loss. Two conditions: (1) evals boundary — deliverable 3's instance→template-version association is read-side only and terminates at the 42050 version event id; no new event kinds, no wire-visible association artifacts, no eval-shaped schema — anything wire-visible for evals belongs to the open §8 pillar and is automatically an architect consultation. (2) reader ordering robustness — `created_at` derives from git commit timestamps, which are not guaranteed monotonic, so version-history reconstruction orders by the `version` tag with `created_at` informational; interpretive ruling: the 42050 doc's "ordered by `created_at`" reads as descriptive of the common case, not normative for readers (kind-doc text is core-owned and unchanged). Non-blocking: the omitted self-pin in the Instructions is unresolvable at authoring time — the pin of record is 1c0409f via the request and this row, consistent with bridge practice; the E2E dogfood (register `dev-node v1 @ 9f147a3` against a mock relay) is achievable by reusing the bridge's in-process NIP-01 mock-relay test infra, and run live doubles as the platform's first real template registration (§7 dogfooding); caps sane ($15/10 iters haiku for four deliverables reusing core + bridge infra, vs bridge's $20/10 for five). Contract-text edits are proposals to the root (tree/ is the root's to edit). |
 | 2026-07-23 | Core-log placement (§1): the Lindenmayer core event log lives on its own permissive relay (strfry/khatru-class) — the **Lindenmayer relay** — and the Buzz relay demotes from assumed core-log carrier to human surface. Trigger: first live bridge-to-Buzz run showed the Buzz relay hard-rejects unknown kinds (exhaustive `required_scope_for_kind` match, no config escape) and enforces ±15-min `created_at` drift (`MAX_TIMESTAMP_DRIFT_SECS=900`) — both findings independently verified by the architect in block/buzz `crates/buzz-relay/src/handlers/ingest.rs` @ daeaf7c. | root (escalation D35D86E8) | **Adopted — option (a)** of the root's three. The Nostr-first layering absorbs this cleanly: §1 already defined the core as "signed events any compliant relay can store"; the live finding is that the Buzz relay is not a compliant carrier for Lindenmayer kinds, so the core log gets a carrier that is. Not a §6.2 violation: the signed event log was always the history and a relay always its carrier — what changed is which deployment runs the relay, not what stores truth; §6.2 wording updated to name the Lindenmayer relay. Option (c) — re-encoding telemetry inside Buzz-accepted kinds — REJECTED: it violates the self-documenting-kind design and §1's core-layer definition (events would be readable only by deciphering a private embedding convention). Option (b) — upstream a configurable kind-allowlist to block/buzz — ENDORSED as a non-blocking parallel track: a legitimate open-source contribution, not a fork under §6.3, but no design surface may depend on its acceptance; if it lands, the Buzz relay becomes *a* compliant carrier, never *the* carrier. New §8 open question records relay selection/deployment. Contract consequence (root to apply; tree/ is the root's): the bridge's publish target becomes the Lindenmayer relay, with Buzz cross-posting a separate derived path. |
 | 2026-07-23 | Timestamp policy and id determinism restated per publish path (§1): core-log events on the Lindenmayer relay keep bridge condition 2 unchanged — content and `created_at` derive from Fractal source rows, ids deterministic, backfill id-idempotent (the carrier requirement "accepts historical `created_at`" exists precisely so this holds). Buzz-bound cross-posts are derived views, not the record: `created_at` is publish time (satisfying Buzz's drift window), the source timestamp and the core event id ride in tags, and idempotency is by reference — the bridge dedups by querying for an existing cross-post citing that core event id (relay-as-cursor extended), not by id determinism. | root (escalation D35D86E8) | Adopted; encoded in §1's Buzz-layer bullet. Bridge condition 2 (verdict 8266A685) needs no restating for the core path; the by-reference rule is the id-determinism story for any Buzz-bound path. |
+| 2026-07-23 | Model-policy retiering: REVIEW steps and the architect run the stronger tier, dev nodes and their children the cheaper one, orchestrator strong. Applied tree-wide by direct human directive; `tree/templates/dev-node` bumped to v2 and registered as a signed 42050 (version event `0f8d0910`, pin `c6696b7`) — the registry's first real version bump. | root (directive A6BE089F) | **Approve** — a key-component change (template + tree-wide policy) but not a structural one: it tunes an economic parameter and touches none of the four review-bar principles. Three manifest corrections applied. (1) §3 named the tiers literally ("haiku-develop/fable-review model policy"), so the manifest body had gone stale against the live tree; rewritten to state the **shape invariant** — orchestrator writes precise work orders, cheaper tier executes, stronger tier reviews — with the current assignment recorded as a tunable parameter, so the next retiering is a parameter edit and not a manifest contradiction. Surfaces that display the policy must read the live assignment, not restate it. (2) §3 described registry-backed template versions as future; they are live, and §3 now says so. (3) §7 economics: the decomposition doctrine rests on a *ratio* (execution cheaper than review and orchestration) which the new tiers preserve, so the doctrine stands unchanged; what shifts is absolute per-child burn, which makes the haiku-era cap-sizing guidance stale — flagged as awaiting observation rather than replaced with invented numbers. Corroboration: the requirements inventory independently recorded the old tier table as a live requirement, which is the argument for generating that display rather than restating it. |
+| 2026-07-23 | Compaction-to-task mapping (§8) **closed** and moved into §5.2 as current truth: compactions publish a kind **42060** event carrying task coordinates in tags and an `e`/`summary-of` pointer to the step's own lifecycle event, with metrics and a summary hash — never summary text — in content. Kind allocated per a stated decade-per-family convention now recorded in §1. | root (directive 7803C28A); research `main.platform_architect.compaction` | **Adopt-with-substitution.** The child's Candidate A shape is adopted (signed, discoverable, privacy-tight, harvestable inside the one adapter per bridge condition 3). Its recommended next-step 3 — "coordinate with Claude Code's harness to emit a `compaction` transcript record" — is **rejected as unnecessary**: architect verification against the tree's own 36 transcripts found the harness **already emits** an append-only `system` record carrying `compactMetadata` (`trigger`, `preTokens`, `postTokens`, `durationMs`, `cumulativeDroppedTokens`, preserved-segment ids), so the study's central premise — "no compaction record exists today" — is false, and the upstream dependency it implied never needed incurring. Detection therefore reads the marker. A usage-discontinuity fallback is retained for transcripts lacking it, but **only** in three-term form (`input_tokens` + `cache_read_input_tokens` + `cache_creation_input_tokens`): the two-term form tracks cache turnover rather than context and produced 4–6 false positives per session in measurement, while the three-term form matched the markers 1:1 (2 drops, 2 markers, same two sessions). Each event carries a `detection` tag (`harness-marker` \| `usage-discontinuity`) so readers can grade the claim (§6.5). Bridge condition 3 is **extended**: the adapter may read append-only structured metadata records, but still may not parse conversational structure, and must never read the compact summary body — the harness writes summary text to the transcript and 42060 carries only its hash (§6.1). Condition on `core`: re-run the block/buzz collision check before writing `docs/kinds/42060-*.md` (nearest Buzz neighbour was 42000 @ 06e3d82; expected clear, but the check is core's to run). |
+| 2026-07-23 | Evergreen v1 defined (§5.1): **v1 is the read plane; Fractal's CLI remains the write plane** — a query surface over the signed log plus a generator/maintainer of the standing context surface, with no write path. A v1 line is drawn through all four §5 capabilities, and v1 holds no local index, extending relay-as-cursor and relay-as-registry to relay-as-context. | root (directive 7803C28A); research `main.platform_architect.evergreen_inv` | Adopted. Of the 28 requirements the inventory derived from the handrolled prototype, 16 are relay-derivable with no query surface at all — that is where v1 belongs. Every write-side gap the inventory named (radio-send UI, signal API, live-edit UI, node-spawn bridge) is a wrapper around a working Fractal capability: wrapping adds a second control path with no new capability, and an orchestration layer over the spawn API drifts at §6.3. "Signal routing is Fractal CLI only" is the boundary holding, not a gap. §6.2 falls out clean because v1 reconstructs on demand rather than indexing. Out-of-scope items recorded in §5.1 so they are not silently dropped; a wire-visible decision-log kind is declined for v1 as governance-shaped work adjacent to the evals fence. |
+| 2026-07-23 | Buzz human surface v1 (§1): cross-post set fixed — 42010/42020 → `KIND_STREAM_MESSAGE` (9) in the subgraph channel, 42040/42041 → an approvals-inbox NIP-29 group, 42030 → parent channel; 38150 and 42050 not surfaced. Two new invariants recorded: the **audience invariant** and **forward-only** (no backfill). | root (directive 7803C28A); research `main.platform_architect.buzz_surface` | **Approve-with-corrections.** The recommended 42050 → `KIND_AGENT_PROFILE` (10100) mapping is **rejected** on two independent grounds: a template is the improvable asset (§3), not a node identity (§2), so publishing versions as agent profiles conflates them; and 10100 is user-owned and globally-scoped "like kind:0" — i.e. replaceable — so each new version would clobber its predecessor and destroy exactly the diffable version history §3 exists to guarantee. If templates ever surface in Buzz it is as a stream message in a registry channel, and replaceability is to be verified first. Correction 1: the proposed tag shape embedded a JSON object as a tag element; NIP-01 tag elements are strings, so the source reference is flattened (`e`/`lindenmayer-source` plus `source_kind` and `source_created_at`), which also makes row 314's dedup-by-reference rule concrete on the wire. Correction 2 (new invariant): **a cross-post may never widen the audience of its source event** — channel membership is the only access gate, so 42030 is the sole kind eligible for a parent channel because it *is* the upward aggregate; this answers the research's open question on marking aggregate privacy scope structurally rather than with a new tag. Backfill declined: Buzz is forward-only, closing the research's open question on historical cross-posting. |

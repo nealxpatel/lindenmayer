@@ -1,99 +1,88 @@
 ---
 name: evergreen_program
-desc: Evergreen design pass — children, contracts, decision spaces, synthesis plan.
+desc: Evergreen design pass — the four rulings that landed, and the verification lesson behind the compaction one.
 created: 2026-07-23T21:40:30Z
 updated: 2026-07-23T21:40:30Z
 ---
 
 # evergreen_program
 
-## Status
+The evergreen design pass is closed. Three research children (compaction,
+evergreen_inv, buzz_surface) delivered, merged, and are synthesized into
+`docs/research/evergreen/README.md`. Four decisions landed in DESIGN.md, each
+with a decision-log row naming its requester and verdict.
 
-All three research children are COMPLETED (compaction, evergreen_inv,
-buzz_surface). No child outstanding; the pass is integration + synthesis
-only, plus one open review. Deliverables sit on the child branches
-(`docs/research/evergreen/{compaction,inventory,buzz-surface}.md`) and land
-at PREPARE. `docs/research/evergreen/README.md` is still the pre-research
-working draft — rewriting it to the final aggregate is a hard gate before
-finish.
+## What was decided
 
-## Open review: model-policy retiering (A6BE089F, saved)
+**Model-policy retiering — approve.** Tunes an economic parameter; no
+review-bar principle touched. §3 rewritten from literal tiers to the shape
+invariant (orchestrator writes work orders, cheaper tier executes, stronger
+tier reviews) with tiers as a recorded parameter. §3 also now records
+registration as live (dev-node v2, 42050 event `0f8d0910`, pin `c6696b7`).
+§7: the decomposition doctrine rests on a *ratio* the new tiers preserve, so
+it stands; only cap-sizing guidance went stale, and it awaits observed sonnet
+burn rather than invented numbers. Root has been asked to send real figures
+when two or three sonnet children have run.
 
-Root directive, not a request, but a key-component change (dev-node template
-+ tree-wide policy), so it needs a verdict and a decision-log row. Applied
-state: REVIEW and this node run opus (was fable); dev nodes and children run
-sonnet (was haiku); orchestrator opus. `tree/templates/dev-node` bumped to
-v2 and registered as a signed 42050 (version event 0f8d0910, pin c6696b7) —
-the registry's first real version bump.
+**Compaction — §8 closed, now §5.2.** Kind 42060, task coordinates in tags,
+`e`/`summary-of` pointer, metrics plus summary hash in content. See the
+verification lesson below — the first version of this ruling was wrong.
 
-Verdict direction (posted early to root as 05237766): APPROVE. It tunes an
-economic parameter; it touches none of the four review-bar principles.
-Corrections that must land with the row:
+**Evergreen v1 — the read plane.** Query surface over the signed log plus a
+context-surface generator; no write path. Every write-side gap the inventory
+named is a wrapper around a working Fractal capability, and wrapping adds a
+second control path with no new capability (§6.3). Extends relay-as-cursor and
+relay-as-registry to relay-as-context.
 
-- `docs/DESIGN.md:108` names the tiers literally
-  ("haiku-develop/fable-review model policy") — stale against the live tree.
-  Rewrite to the SHAPE invariant (orchestrator writes precise work orders,
-  cheaper tier executes, stronger tier reviews) with the current tier
-  assignment recorded as a parameter, so the next retiering is a parameter
-  edit and not a manifest contradiction.
-- §7 decomposition economics were never load-bearing on haiku specifically —
-  the doctrine's claim is a RATIO (execution cheaper than review and
-  orchestration), which sonnet-develop/opus-review preserves. What changes is
-  absolute burn per child, so derived cap-sizing guidance is stated against
-  haiku-era numbers. Flag it; do not invent replacement numbers.
-- §3 describes registry-backed template versions as future; they are live
-  today. Update.
+**Buzz v1 — approve with corrections.** Rejected 42050 → `KIND_AGENT_PROFILE`
+(10100): it is replaceable like kind:0, so each version would clobber its
+predecessor and destroy the diffable history §3 guarantees. Corrected a
+malformed tag shape (JSON object where NIP-01 requires strings). Added the
+audience invariant — a cross-post may never widen the audience of its source
+event — which makes 42030 the only kind eligible for a parent channel.
+Backfill declined; Buzz is forward-only.
 
-## Directive
+## The verification lesson (worth carrying)
 
-Root directive 7803C28A (saved in radio queue), continued by A280F6DC.
-Three deliverables:
-(1) resolve/advance §8 compaction-to-task mapping, (2) design evergreen v1
-concretely (requirements inventory = tree/root/CONTEXT.md; v1 line through
-§5's four capabilities), (3) map the Buzz human surface. Outputs:
-docs/research/evergreen/ aggregate README, DESIGN.md §5 revision with §8
-update and decision-log rows, proposed tree/evergreen/NODE.md skeleton in my radio
-reply to root (tree/ is root's to edit). Constraints owned: evals fence
-(anything eval-shaped waits); harvester-adapter single-module blast radius
-(my 8266A685 condition 3); §6.1 no-leak on compaction pointers. Relay at
-ws://localhost:7100 is interim ops carrier (root FYI 5E37772F), not a relay
-selection — §8 selection question stays open and mine.
+The compaction child reported "no compaction record exists today" and built
+its recommendation on asking Claude Code to add one. I accepted that premise
+and spent the ruling's reasoning on *working around* the upstream dependency —
+rejecting it on precedent and substituting an inference from usage series.
+Good reasoning on a false premise.
 
-## Children (all haiku leaves, $4 cap, $1.5/iter, 3 iters, scope docs/, trimmed steps PLAN+EXECUTE+COMMIT)
+Checking the premise at REVIEW took one script against `transcripts/`: the
+harness already writes a `system` record with `compactMetadata` (`trigger`,
+`preTokens`, `postTokens`, `durationMs`, `cumulativeDroppedTokens`,
+preserved-segment ids), plus a `user` record flagged `isCompactSummary`. Two
+markers across 36 transcripts, in exactly the two sessions that compacted.
 
-- `main.platform_architect.compaction` → owns
-  docs/research/evergreen/compaction.md. Compaction records in
-  transcripts/*.jsonl, harvester adapter surface, run/iter/step anchors
-  (SQLite + 42010/42020 tags), Nostr derived-view prior art, 2-3 candidate
-  shapes vs my three constraints. No kind allocation (mine).
-- `main.platform_architect.evergreen_inv` → owns
-  docs/research/evergreen/inventory.md. CONTEXT.md requirements table
-  classified relay-derivable / fractal-derivable / human-authored; existing
-  bridge/registry CLI query surfaces; per-capability gap list.
-- `main.platform_architect.buzz_surface` → owns
-  docs/research/evergreen/buzz-surface.md. Buzz primitives (NIP-29 rooms,
-  inboxes, directory), ingest gate re-verified at current HEAD, NIP-OA
-  handling, per-kind-family cross-post mapping table. Cites file@commit.
+The substituted inference was *also* wrong in detail: the two-term series
+(`input_tokens` + `cache_read_input_tokens`) tracks cache turnover, not
+context — cache expiry collapses `cache_read` while `cache_creation` absorbs
+the prompt — and fired 4–6 false positives per session. The three-term form
+matched markers 1:1.
 
-All self-finish on own committed deliverable + priority-3 outbox note;
-friction escalates to me at priority 6. Spawned from my branch at commit
-6968e84 (post parent-merge: contains docs/kinds/, merged bridge+registry
-src, relay-integration aggregate).
+Both errors were in shipped text before REVIEW caught them, and I had already
+radioed the wrong version to root for bridge. Correction sent (31BA28A8).
 
-## My decision framing
+The rule this yields: **a child's negative existence claim ("no X exists") is
+a premise, not a finding, and gets verified before any ruling rests on it.**
+Cheap to check, expensive to get wrong — a wrong premise had already
+propagated into DESIGN.md, the aggregate, the wiki, and a priority-6 message
+to another node's implementer.
 
-Drafted in docs/research/evergreen/README.md (decision spaces: compaction
-constraints + axes; v1 framings a/b/c — generator vs query CLI vs both;
-Buzz-surface fixed invariants vs open choices). README is a working draft
-labeled in-progress; MUST be rewritten to final aggregate before finish
-(narrative surfaces never advertise unwritten sections).
+## Standing constraints this pass respected
 
-## Synthesis plan
+Evals fence (nothing eval-shaped); harvester single-module blast radius
+(bridge condition 3, now extended to permit append-only structured metadata
+but still barring conversational structure and the compact summary body);
+§6.1 no-leak on compaction pointers. `docs/kinds/` file contents are `core`'s
+to write — I allocate numbers and set conditions, core writes the entry.
+`tree/` is the root's to edit — contract text goes out as proposals.
 
-No steering left — merge all three settled children at PREPARE; rewrite README
-as aggregate; verdict + row on the model-policy retiering (above); write DESIGN.md §5 revision + §8 compaction advance +
-decision-log rows (name requester = root directive 7803C28A, verdicts);
-radio reply to root with tree/evergreen/NODE.md skeleton proposal; progress
-summary priority 2-3; unsave 7803C28A, A280F6DC, C2CDCD79, A6BE089F; then
-node finish. All research inputs are in hand, so no child-straggler
-contingency applies.
+## Open items owned elsewhere
+
+- `core`: re-run the block/buzz collision check before writing
+  `docs/kinds/42060-*.md`.
+- root: apply the proposed `tree/evergreen/NODE.md` skeleton (sent 9AB84B62);
+  route the detection correction (31BA28A8) to bridge.

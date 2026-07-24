@@ -1,5 +1,14 @@
 # Compaction-to-Task Mapping Research
 
+> **Architect note — one finding in this study is superseded.** §1's
+> conclusion that "no compaction record exists today," and the next-step that
+> follows from it (asking Claude Code to emit one), are incorrect: the harness
+> already writes a `system` record carrying `compactMetadata`. The adopted
+> design reads that marker. See `README.md` §1 for the corrected version and
+> the measurements behind it. The rest of this study — harvester boundary,
+> task anchors, Nostr referencing idioms, candidate comparison — stands, and
+> its Candidate A shape is what shipped.
+
 **Research Question:** How should evergreen-session compactions map back to the task they summarize? (DESIGN.md §8, "Compaction-to-task mapping")
 
 **Constraint Framework:**
