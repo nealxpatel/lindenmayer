@@ -1,14 +1,15 @@
 # Dev-Node Template — NODE.md skeleton
 
-> First live instance of the DESIGN.md §3 Node Template concept. v2 changes
-> the model policy tiers (sonnet develop / opus review). The registry now
-> exists — register each version with `lindenmayer-registry publish`. Instantiate per
+> First live instance of the DESIGN.md §3 Node Template concept. v2 retiered
+> the model policy (sonnet develop / opus review); v3 adds the CLI
+> argument-path testing rule. Register each version with
+> `lindenmayer-registry publish`. Instantiate per
 > `README.md` in this directory; replace every `<ANGLE>` placeholder.
 
 - **branch:** `<PARENT-BRANCH>.<name>` (first ply: `main.<name>`)
 - **parent:** `<PARENT-BRANCH>` (first ply: `main`, the root / user node)
 - **scope:** `<SCOPE>` (directory-granular; commits outside are rejected)
-- **template:** `dev-node v2 @ <TEMPLATE-PIN-SHA>` — the template's commit
+- **template:** `dev-node v3 @ <TEMPLATE-PIN-SHA>` — the template's commit
   pin, recorded verbatim in instances: a future 42050 template-version event
   needs name/version/git_ref, and without the pin the ref is recoverable
   only by archaeology (architect condition, verdict AF477673 run).
@@ -28,7 +29,16 @@ Deliverables, in `<PRIMARY PATH>`:
 <NUMBERED DELIVERABLES — one observable artifact each, with its acceptance
 evidence named (tests, docs, escalation sent). Write them so the node can
 satisfy every one while its run is alive: no gate only another node can
-open.>
+open — and no gate only the OPERATOR can open (a live endpoint, a running
+service, a human action); gate on fixtures and mocks the node controls,
+and make the live run an explicitly non-blocking operator follow-up.>
+
+**Any deliverable that ships a CLI must put the ARGUMENT PATH under test** —
+an E2E invoking the module entry point with real arguments, not just the
+objects behind it. Two ply nodes shipped CLIs whose argument path no test
+executed; both broke on first live use (an undeclared import; a required
+config field never passed through). This is a template rule because it was
+learned twice.
 
 ### Decomposition doctrine
 
