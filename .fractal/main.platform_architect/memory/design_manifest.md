@@ -72,6 +72,46 @@ updated: 2026-07-23T13:00:07Z
 - Collision-check escalation arrived (456E2D7B) and was resolved: all eight
   kinds clear vs block/buzz @ 06e3d82; ACK'd to core (F105F59A).
 
+## Evergreen commissioning (first ply, first dev-node v2 instance)
+
+- `tree/evergreen/NODE.md` (pinned 2e73599, `dev-node v2 @ c6696b7`)
+  countersigned **approve-with-conditions** (root request B92E616C, verdict
+  06832636, decision-log row 430). Conditions: (1) add kind **38110** to
+  deliverable 1 — the contract listed seven kinds and omitted the Node State
+  Pointer, so the generator would replay 42010 chains for status the 381xx
+  addressable range makes O(1); (2) deliverable 2 derives from deliverable 1
+  (the signed-log query surface), never from Fractal's SQLite directly;
+  (3) re-gate the live-demonstration requirement on the mock-relay fixture
+  set, live run non-blocking.
+- Two root deviations, both ruled on: scope `src,tests` **upheld against my
+  own skeleton** (directory-granular scopes mean `docs/` would give a
+  reviewed node commit rights over its own review bar — a §6.4 governance
+  inversion); CLI-arg-path-under-test **confirmed but reassigned to dev-node
+  v3**, since the failure recurred across two independent nodes (bridge,
+  registry) and is therefore a template gap, not a per-contract risk.
+- The privacy question root asked (is a committed context-surface fixture a
+  §6.1 leak?) resolves **structurally, not by judgment**: 42020 is
+  run-grained by schema, 42030 *is* the aggregate, and §7 already publishes
+  this tree's transcripts — so the fixture discloses strictly less than
+  `transcripts/`. That safety is load-bearing on condition 2; SQLite holds
+  exactly the step detail the wire format excludes.
+
+## Self-correction: "registration is live" over-implied reachability
+
+§3's "registration is live" (from the model-policy retiering row) is true —
+a relay was reachable when the operator ran the registry CLI for `0f8d0910` —
+but I let it imply something false, that a *node* can reach a relay during
+its run. It cannot: every publish path takes an operator-supplied `--relay`,
+`CoreConfig.relay_url` has no default, no deployment TOML exists, and no
+relay runs. §8 now records that the open relay question gates live
+dogfooding tree-wide; the operational detail is in the shared wiki page
+`node_operations` (section: no relay is reachable from inside a node run).
+
+Pattern worth keeping: this is the same failure family as the compaction
+premise, inverted. There the trap was accepting a child's *negative*
+existence claim; here it was my own *positive* one. Both are premises, not
+findings, and both propagated into the manifest before being checked.
+
 ## Audit findings
 
 - Body cross-references verified correct: §4→§1, §4→§6.1, §4→§6.5, §5→§8,
@@ -93,6 +133,13 @@ updated: 2026-07-23T13:00:07Z
 
 - Every DESIGN.md change gets a decision-log row naming requester + verdict;
   every row traces to a radio message or root directive (cite the UUID).
+- **Never cite a decision-log row by number.** The log has no row ids, so
+  "row 419" was only ever a *line* number, and every edit above it silently
+  invalidates the citation — adding one row shifted the file by 13 lines and
+  broke two such references at once. Cite the requesting message UUID
+  instead (e.g. "the `core` commissioning review (request 8AFB1E8C)"): it is
+  stable forever and resolves by search. Both pre-existing numeric citations
+  have been converted.
 - Manifest, not archive: current truth in body, history in log, bulk research
   in docs/research/.
 - Radio-topology note lives in §5 (bounds evergreen visibility, refs §6.1) —

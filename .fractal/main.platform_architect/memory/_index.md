@@ -1,6 +1,6 @@
 ---
 name: memory
-desc: ...
+desc: Platform-architect working memory — manifest state, commissioning verdicts, research programs.
 tags: []
 sources: []
 created: 2026-07-23T12:52:00Z

@@ -44,6 +44,33 @@ merge commits invisible. Not data loss: verify with
 `rtk proxy git log --first-parent --oneline` (raw, unfiltered) or
 `git rev-parse HEAD` before concluding a merge didn't land.
 
+## No relay is reachable from inside a node run
+
+There is no deployed Lindenmayer relay a node can find on its own, and no
+node's completion may be gated on live relay data. Verified:
+
+- No relay endpoint is recorded anywhere in the repo. Every publish path
+  takes it as an operator-supplied argument — the bridge CLI's
+  `run --tree <path> --relay <url>`, and the registry CLI likewise (commit
+  `adfeab3` fixed it to pass `--relay` into `CoreConfig`).
+- `CoreConfig.relay_url` is a required field with no default
+  (`src/lindenmayer/core/config.py`).
+- No deployment TOML exists in the tree.
+
+Relay selection and deployment is still an open design question
+(`docs/DESIGN.md` §8). A relay *has* been reachable in one-off operator runs
+(the dev-node v2 template registration), but that does not generalize: an
+autonomous node cannot bring one up or discover its URL.
+
+**Consequence for contract authors.** A completion requirement of the form
+"run X against live relay data" is a gate only the operator can open, which
+strands a finished node `exited` rather than `completed`. Gate on the
+mock-relay fixture set instead — `tests/relay_mock.py` is in-tree and both
+`bridge` and `registry` reuse it — and keep the live run as an explicitly
+non-blocking operator-run follow-up. Design a CLI so it takes `--relay` and
+document the one-command invocation, so the live run is trivial once a relay
+exists.
+
 ## CLI syntax gotchas
 
 - `fractal commit` takes the message positionally (no `-m`).
