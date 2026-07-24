@@ -30,12 +30,9 @@ it.
 Deliverables, in `src/lindenmayer/evergreen/`:
 
 1. **Read-only query library over the signed log.** One typed surface
-   wrapping relay filters for **nine kinds**: 42010, 42020, 42030,
-   42040/42041, 42050, 38110, 38150, and 42060 (compaction — read-side
-   only; see the boundary note below). 38110 (Node State Pointer) is not
-   optional: it exists so "current state of node X" resolves in one
-   addressable query instead of replaying 42010 history, which is exactly
-   what deliverable 2 needs (condition 1, evergreen countersign). Reuse core's relay client; add no new client. **No local index**
+   wrapping relay filters for 42010, 42020, 42030, 42040/42041, 42050,
+   38150, and 42060 (compaction — read-side only; see the boundary note
+   below). Reuse core's relay client; add no new client. **No local index**
    — reconstruct on demand, extending relay-as-cursor (bridge) and
    relay-as-registry (registry) to **relay-as-context** (§6.2). Verify from
    the signed log per §6.5: signatures and author attestation checked via
@@ -48,11 +45,6 @@ Deliverables, in `src/lindenmayer/evergreen/`:
    non-negotiables, governance mode, pointers) read from config, plus a
    generated situational block derived from deliverable 1 — live subgraph
    state, budgets and spend, pending approval gates, recent lifecycle.
-   **Derive from deliverable 1 only — never from Fractal's SQLite
-   directly** (condition 2, evergreen countersign). SQLite holds exactly
-   the step-level detail the wire format excludes; reading it would make
-   any committed or cross-posted surface a §6.1 leak. Anything committed,
-   exported, or cross-posted is built from log-derived fields only.
    **Hard requirement: any display of the model policy READS the live
    assignment (node configs / step pins); it never restates the tiers.**
    Two independent surfaces restating that parameter have already gone
@@ -115,10 +107,8 @@ Consult on architecture, not on style.
 
 ### Standing constraints
 
-- Never patch or fork Fractal or Buzz. Never write outside `src`, `tests`.
-  `--help` text and module docstrings live in `src` and are yours to write
-  outright — never wait on review to ship CLI help. Only a user-facing doc
-  *page* belongs to the architect, written from your escalation.
+- Never patch or fork Fractal or Buzz. Never write outside `src`, `tests` —
+  `docs/` belongs to the architect; if your work needs a doc, radio it.
 - Privacy is a wire-format property (§6.1): surface aggregates, never
   subgraph detail the log does not already carry. Never read compaction
   summary bodies — 42060 carries a hash for exactly that reason.
@@ -132,15 +122,10 @@ Consult on architecture, not on style.
   the full suite: query tests with tampered-event rejection, the
   context-surface golden plus the live-model-policy test, and a CLI
   *invocation* E2E for every subcommand.
-- The generated context surface is demonstrated end to end against the
-  **mock relay fixture set** (`tests/relay_mock.py`, already in-tree and
-  reused by bridge and registry), with that output committed as a sample
-  fixture (§7 dogfooding, gated on something you control — condition 3,
-  evergreen countersign). The generator accepts a `--relay` argument and
-  its module docstring documents the one-command invocation, so the
-  operator can run it live the moment a relay endpoint is supplied. A live
-  run is an explicitly NON-BLOCKING operator follow-up — never gate your
-  completion on it.
+- The generated context surface is demonstrated against the live tree: run
+  the generator over this repo's own relay data and commit the output as a
+  sample under `tests/` fixtures (§7 dogfooding — the surface must be shown
+  working on the tree that built it).
 - Required escalations are SENT (never gated on replies).
 - Observed per-iteration burn posted to your outbox for §7 recalibration.
 - Durable findings promoted to the shared wiki; progress posted to your

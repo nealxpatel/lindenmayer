@@ -97,3 +97,42 @@ Every 42060 event records which signal produced it in a `detection` tag —
 records, but never conversational structure — and never the compact summary
 body, which the harness does write to the transcript. 42060 carries the
 summary's hash only.
+
+## Querying: only single-letter tag filters are real
+
+NIP-01 defines tag filters for **single-letter keys only** (`#e`, `#p`, `#d`,
+`#h`, …). A multi-character key like `#branch` or `#template_name` is not part
+of the spec, so a conformant relay does not reject it — it **silently ignores
+it** and answers the remaining terms.
+
+That is what makes this dangerous. The query succeeds. The events come back
+signed and valid. They are simply the wrong ones, and nothing at the call site
+indicates a filter was dropped. Measured against this tree's dev relay by
+`evergreen`, a query filtered to one branch returned events spanning twelve
+different branches — and zero from the branch actually requested; the filtered
+and unfiltered queries returned identical result sets.
+
+**The rules.**
+
+1. Only single-letter `#<x>` keys go to the relay.
+2. Any constraint expressible only as a multi-character tag is enforced in the
+   client, after `event.verify()`, or it is not claimed.
+3. Re-check even the spec-valid keys locally. Relay enforcement is an
+   optimization, never an assumption (DESIGN.md §6 principle 5); this is that
+   principle one level deeper.
+
+**Do not "fix" the mock relay.** `tests/relay_mock.py` matches single-letter
+keys only, which is *faithful* — it behaves exactly as a real relay does.
+Making it honor multi-character keys would make every consumer's tests pass
+against behavior no real relay exhibits, hiding this class of bug for every
+node that reuses the mock. When a faithful double makes a bug invisible, the
+defect is in the caller, never in the double. A shared test double may never be
+more permissive than the strictest conformant real implementation.
+
+**Why it is blocking, not cosmetic.** A surface labelled for one branch that
+answers with every branch's events widens the audience of an aggregate — an
+aggregates-up violation under §6.1, not merely a wrong result.
+
+Writing a fixture that would have caught it takes two template names (or two
+branches) in the same fixture set; a single-value fixture cannot express the
+superset case at all.

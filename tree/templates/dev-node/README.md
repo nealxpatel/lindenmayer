@@ -1,4 +1,4 @@
-# Dev-Node Template (v3)
+# Dev-Node Template (v2)
 
 The standard shape for Lindenmayer development nodes: decomposition doctrine,
 sonnet-develop / opus-review model policy, and the architect-consultation
@@ -18,10 +18,7 @@ here and registered as signed 42050 events via
    `steps/03-REVIEW.md` in the node's worktree (and verify on any child it
    spawns).
 4. Author the runtime NODE.md's Instructions/Completion Requirements from the
-   contract, citing the pin sha and the architect countersign id. Point the
-   node's `scripts/test.sh` at a worktree-local venv
-   (`uv run --project . python -m pytest`) — a shared venv makes tracebacks
-   name the main tree's files and has walked a node into editing them.
+   contract, citing the pin sha and the architect countersign id.
 5. Commissioning gate: radio the contract to `main.platform_architect`
    (priority 6) for review; start only on countersign + root go.
 6. First directive: an orchestrator-authored work order — numbered items, one

@@ -10,9 +10,7 @@
 ## Instructions
 
 You are the **bridge** node for Lindenmayer: the Fractal host application
-that makes the tree observable as signed Nostr events. Your versioned
-contract is `tree/bridge/NODE.md`; if your runtime seed and that contract
-ever disagree, radio the root (priority 6) instead of guessing. Design inputs, in
+that makes the tree observable as signed Nostr events. Design inputs, in
 authority order: `docs/DESIGN.md` (§1 layering, §6 principles, §4
 extraction requirements), then core's shipped API
 (`src/lindenmayer/core/`, `docs/kinds/` — build against it, never modify
@@ -25,12 +23,8 @@ Deliverables, in `src/lindenmayer/bridge/`:
    (nodes, runs, iters, steps, events, messages — WAL-safe, never writes),
    and a transcript usage harvester: Fractal's DB stores only derived USD,
    so ground-truth token counts come from the agent session transcripts
-   (42020 needs both). The harvester reads ONLY append-only per-request
-   usage fields (written at response time; they survive compaction), never
-   parses conversational structure, and sits behind its own adapter module
-   so future compaction-design changes ripple through exactly one place
-   (architect condition 3, verdict 8266A685). Acceptance: adapter tests
-   against a fixture DB and fixture transcripts.
+   (42020 needs both). Acceptance: adapter tests against a fixture DB and
+   fixture transcripts.
 2. **Translation layer.** Fractal rows → core kind models: status
    transitions → 42010 lifecycle; one 42020 accounting rollup per run
    (tokens + shadow cost), NEVER per step or per iteration; subgraph
@@ -52,12 +46,9 @@ Deliverables, in `src/lindenmayer/bridge/`:
    in tags, idempotency by reference (query for an existing cross-post
    citing the core id), never by id determinism. Stateless resume: the relay is the cursor — on startup,
    query own latest published events per node and resume from there; no
-   local state files, no new storage of any kind (§6.2). Event ids MUST be
-   deterministic: event content and `created_at` derive from Fractal source
-   rows (source timestamps, never wall clock), so a replay after cursor
-   regression reproduces identical ids. Acceptance: idempotent-replay tests
-   against a mock relay (restart mid-stream, no duplicates, no gaps),
-   asserting on event ids (architect condition 2, verdict 8266A685).
+   local state files, no new storage of any kind (§6.2). Acceptance:
+   idempotent-replay tests against a mock relay (restart mid-stream, no
+   duplicates, no gaps).
 5. **CLI entry.** `lindenmayer-bridge run --tree <path> --relay <url>`,
    configured via core's config module. Acceptance: an end-to-end dogfood
    test — a fixture copy of THIS repo's own tree DB, bridged to a mock

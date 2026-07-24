@@ -44,23 +44,31 @@ merge commits invisible. Not data loss: verify with
 `rtk proxy git log --first-parent --oneline` (raw, unfiltered) or
 `git rev-parse HEAD` before concluding a merge didn't land.
 
-## No relay is reachable from inside a node run
+## A relay may be running, but no node can discover which one
 
-There is no deployed Lindenmayer relay a node can find on its own, and no
-node's completion may be gated on live relay data. Verified:
+**Corrected — an earlier version of this page said no relay is reachable from
+inside a node run. That was wrong.** A dev relay does answer on
+`ws://localhost:7100`; `nc -z localhost 7100` succeeds from inside a node run,
+and `docs/research/evergreen/inventory.md` records that relay holding 12 node
+identities with live 42010/42020 events. Do not repeat the reachability claim.
 
-- No relay endpoint is recorded anywhere in the repo. Every publish path
-  takes it as an operator-supplied argument — the bridge CLI's
-  `run --tree <path> --relay <url>`, and the registry CLI likewise (commit
-  `adfeab3` fixed it to pass `--relay` into `CoreConfig`).
-- `CoreConfig.relay_url` is a required field with no default
-  (`src/lindenmayer/core/config.py`).
-- No deployment TOML exists in the tree.
+The real problem is **discovery and reproducibility**, and it still bites:
 
-Relay selection and deployment is still an open design question
-(`docs/DESIGN.md` §8). A relay *has* been reachable in one-off operator runs
-(the dev-node v2 template registration), but that does not generalize: an
-autonomous node cannot bring one up or discover its URL.
+- No deployment artifact exists — no `deploy/`, no compose file, no deployment
+  TOML — so the endpoint is operator ambient state, not something the repo
+  tells a node.
+- The only relay default recorded in code, `registry/cli.py:35`, is
+  `ws://localhost:8080` — **a port nothing is listening on**. A node that
+  trusts the one default in the tree reaches nothing, and fails with a
+  connection error that reads like the relay being down.
+- `bridge/cli.py:210` makes `--relay` required, and `CoreConfig.relay_url` has
+  no default (`src/lindenmayer/core/config.py`). Those are the correct
+  shapes: failing loudly beats a default aimed at a closed port.
+
+Relay selection and deployment remains an open design question
+(`docs/DESIGN.md` §8), which now gates on reproducibility rather than
+reachability. Closing it means a checked-in deployment plus one endpoint of
+record.
 
 **Consequence for contract authors.** A completion requirement of the form
 "run X against live relay data" is a gate only the operator can open, which
