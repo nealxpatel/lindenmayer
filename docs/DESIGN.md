@@ -29,6 +29,23 @@ not caught up. Nothing built depends on the correction — every component
 targets the minimum relay contract, which is precisely what the layering
 bought.
 
+**Vocabulary.** "Fractal" had come to mean three things in this project's own
+conversation, which is one too many for a document that governs by wording:
+
+- **Fractal** — the agent-tree platform (plasma-ai/fractal) this repo
+  integrates with. Always capitalized, always the platform.
+- **tree** / **subgraph** — a running instance: a graph of nodes rooted at a
+  branch. What you steer, what exits, what costs money.
+- **capability** — the durable asset: a template plus a persistent role
+  identity plus that identity's version-scoped track record (§2). This is the
+  thing an organization owns and a person is granted authority over — e.g.
+  `looker-data-model`. It outlives any particular tree.
+
+"Fractal" is retired from the third sense. The distinction is not pedantry:
+§1's revocation rule, §2's identity scoping, and §4's grants are all
+statements about *capabilities*, and they read as nonsense if applied to a
+run.
+
 ## 1. The bridge (foundation layer)
 
 - Implemented as a Fractal host application: consumes Fractal's `on_<event>`
@@ -44,7 +61,8 @@ bought.
     Telemetry, radio aggregates, approval events, and template registration
     live here. Custom kinds are allocated one decade per family in the 420xx
     regular block — 42010 lifecycle, 42020 accounting, 42030 digest, 42040/1
-    approval, 42050 template, 42060 compaction — with the units digit
+    approval, 42050 template, 42060 compaction, 42070 commission, 42080/1
+    grant and grant-revocation — with the units digit
     reserved for members of the same family, so a new family takes the next
     decade and allocation stays mechanical. Every allocation is
     collision-checked against `block/buzz` before its registry entry is
@@ -103,11 +121,15 @@ bought.
   Buzz-layer binding of the same idea to hosted git); channel membership is
   the only access gate.
 - Node identity via NIP-OA owner attestation: each node's keypair is attested
-  by its responsible human (an `auth` tag — owner pubkey, conditions, BIP340
-  signature — attachable to any event; restated in
-  `docs/kinds/nip-oa-attestation.md`). The attestation chain is core
-  (verifiable anywhere); relay-enforced instant revocation — remove the
-  human, the subgraph loses access — is Buzz-layer (see §2).
+  to a **durable owner key** — an organization or seat key, not an individual
+  person (an `auth` tag — owner pubkey, conditions, BIP340 signature —
+  attachable to any event; restated in `docs/kinds/nip-oa-attestation.md`).
+  The attestation chain is core (verifiable anywhere); relay-enforced instant
+  revocation is Buzz-layer (see §2). **A human's authority over a subgraph is
+  a grant, not an attestation** (§4): revoking a person revokes their grants
+  and leaves the subgraph, its identity, and its track record intact. NIP-OA
+  needs no extension to carry this — its owner field is a pubkey, and the
+  draft nowhere requires that pubkey be a person.
 - Fractal `requires_approval` steps surface as signed approval events (core);
   enforcement of approval-gated merges via buzz-protect is Buzz-layer.
 
@@ -122,7 +144,48 @@ only the persistent nodes central to executing work. Conceptually, persistent
 nodes are like the "sub-agents" of coding harnesses: named, durable roles with
 track records. Ephemeral worker nodes stay anonymous inside their subgraph;
 their work reaches the record only as the aggregates their persistent parent
-signs.
+signs. A persistent node maps one-to-one onto a Buzz agent at the **role**
+level — not a tree, not a run; ephemeral workers map to nothing, which is
+correct rather than lossy, since a subgraph's internals are not representable
+in a flat agent model and §6.1 says they should not be visible there anyway.
+
+**Identity is role-scoped; trust is version-scoped.** These are separate axes
+and the interaction is the whole point:
+
+- **One npub per role, persisting across runs and across template
+  revisions.** Minting a new identity per version would fragment the track
+  record exactly where continuity is the asset, and would churn the agent
+  roster on every template edit.
+- **Revision keeps the identity; forking mints a new one.** A template
+  revision (dev-node v2 → v3) leaves the role and its npub untouched. A
+  *fork* — deriving `looker-data-model` v1 from dev-node v3 — is a new role
+  with a new identity. The 42050 inherit `e`-tag records **design ancestry,
+  not reputation transfer**: a forked template arrives with a documented
+  lineage and an empty track record, never pre-trusted on an unrelated role's
+  history.
+- **Trust is scoped to the version in force.** The honest claim is "this
+  role, under v3, has N clean runs" — so a version bump re-enters probation
+  while the longer identity history persists and stays readable. A role's
+  reputation is therefore a series, not a scalar.
+
+Together these define the platform's durable asset: a **capability** is a
+template plus a role identity plus that identity's version-scoped track record
+(vocabulary, §0).
+
+**Key roles are separate and must not be conflated.** Three distinct keys are
+in play, and two of them are routinely called "owner":
+
+- **Author key** — a human's own key. Signs **template versions**, because a
+  template is authored work product (§3).
+- **Durable owner key** — the org or seat key of §1. What a **node's**
+  keypair is attested *to* via NIP-OA's `auth` tag, whose spec field is
+  confusingly also named `owner`.
+- **Node key** — the node's own keypair, which signs the node's own events.
+
+So the registry's existing 42050 events, signed with a human's key, are
+correct as issued: a human wrote those templates, and authorship is not
+attestation. Where this document says "owner key" unqualified it means the
+durable key of §1; template authorship is always "author".
 
 ## 3. Node Templates (the improvable asset)
 
@@ -149,6 +212,24 @@ pin, which map onto 42050's `template_name`/`version`/`git_ref` tags. Two
 instantiations exist, both commissioning-reviewed per the decision log: the
 bridge node contract (`tree/bridge/NODE.md`) and the registry node contract
 (`tree/registry/NODE.md`).
+
+**Adoption is explicit, never automatic on publish.** Publishing v3 does not
+upgrade anything: a live role adopts a version by a recorded event, and until
+it does it runs the version it adopted. Silent upgrade-on-publish would
+destroy version→outcome attribution, which is the claim the analytics rest on
+— you cannot say "v3 has N clean runs" if instances migrate underneath the
+measurement. Fractal agrees structurally: a node's seed is immutable for the
+duration of a run, so an adoption can only ever take effect at a run boundary.
+
+An agent's Buzz-layer profile (kind 10100) may advertise the version behind
+it, so a human deciding whether to trust an agent can see it. Two constraints,
+both drawn from failures already recorded here. The profile carries
+**resolvable coordinates** — an `a` tag to the 38150 template pointer plus the
+adopted 42050 event id — never a transcribed version string: a restated
+version goes stale silently, exactly as the restated tier table did. And the
+profile is a **derived pointer, never the record**: 10100 is replaceable, so
+it holds current truth only, and where it disagrees with the adoption chain
+the adoption chain wins.
 
 **Registration is live, not future.** `registry` holds template versions as
 signed 42050 events today: dev-node **v2** is registered (version event
@@ -199,17 +280,57 @@ revocation or membership. And every corpus row is labeled with its author's
 attestation state at extraction time, so downstream training can filter or
 weight on it.
 
-**History access grants.** Training use of history is consent-gated, and the
-consent mechanism is the platform's own idiom: a human grants time-limited
-access to their history — to a node or to another human — as a **signed,
-revocable, expiring event**. Consent thereby has the same provenance as
-everything else: who granted what to whom, for which purpose, over which
-window, and whether it was revoked are all facts in the event log, not rows
-in a side policy store. Grants exist to facilitate fine-tuning a model for a
-given task or project; the training itself runs on hosted inference/tuning
-infra (Baseten/Fireworks-type) and is future development. Extraction
-pipelines honor grants and their expiry/revocation, respecting §6.1
-(mechanics open, §8).
+**Grants: one primitive, three uses.** Consent and authority share a single
+mechanism — a **signed, revocable, expiring grant event** (kind 42080; its
+revocation is a separate append-only 42081, because a replaceable grant would
+clobber the evidence that authority once existed). Whatever a grant conveys,
+the same facts land in the log: who granted what to whom, for which purpose,
+over which window, and whether it was revoked — never rows in a side policy
+store.
+
+The three uses:
+
+1. **History access for training.** A human grants time-limited access to
+   their history, to a node or to another human. Grants exist to facilitate
+   fine-tuning for a given task or project; the training itself runs on
+   hosted inference/tuning infra and is future development.
+2. **Management authority.** A human's evergreen node (§5) holds a revocable
+   grant of authority over named subgraphs. This is what makes §1's durable
+   attestation work: the org holds the capability, a person currently holds
+   authority over it, and revocation targets the grant.
+3. **Succession.** A departing human's grants are revoked and equivalents
+   issued to their successor's evergreen node, optionally with read access to
+   prior history so the successor can learn what happened.
+
+**Why one kind and not three.** Not because the three share a shape — reuse is
+evidence of economy, not of correctness. They share **revocation semantics**,
+which is the property that actually has to match: the revoker is the grantor
+in every case (the grantor's identity varies because the resource varies,
+which is a field and not a difference in meaning); the blast radius is
+forward-only in every case (revoking history access stops future extraction
+while already-extracted rows stand, labeled with their attestation state at
+extraction time; revoking management authority stops future commissioning
+while a running node's immutable seed carries its run to completion); and
+expiry is identical. A `scope` tag distinguishes them. Had the revoker
+differed — had one grant been revocable by someone other than whoever issued
+it — they would be distinct kinds regardless of how alike they looked.
+
+**What grants do not yet do.** Nothing enforces a management grant today:
+Fractal does not read the signed log, so a grant is a governance fact of the
+same standing as a decision-log row — real, verifiable, and not a gate.
+Commissioning (§5.3) is what first gives grants a consumer that checks them.
+
+Extraction pipelines honor grants and their expiry/revocation, respecting
+§6.1 (mechanics open, §8).
+
+**Succession costs nothing at the attestation layer, and that is the argument
+for §1's durable owner key.** NIP-OA has no revocation primitive at all — its
+conditions grammar admits only `kind=` and `created_at` bounds, and the draft
+states plainly that attestations are never revoked, only superseded by a newer
+attestation. Under a person-attested model, every departure would require
+reissuing every attestation in the subgraph, and the spec gives no clean way
+to do it. Under §1's durable key the attestation never changes on succession
+at all: only grants move. NIP-OA's weakest property stops mattering.
 
 ## 5. The Evergreen Node
 
@@ -256,6 +377,15 @@ it is the boundary holding. The read side is the opposite case: most of what
 the prototype needs is reconstructable from the signed log, and none of it has
 a query surface today.
 
+**The read/write split governs the Fractal control plane, not the log.**
+Evergreen publishing a signed event is not a write-plane breach — publishing
+to the log is what every component in this platform does, and bridge and
+registry already do it. What evergreen may not do is *drive Fractal*. The
+distinction matters because the two get conflated: "no write path" has been
+read as "evergreen never signs anything," which would bar it from the one
+thing §5.3 shows is both safe and necessary. The governing test is §6.5's
+competing-assertion rule, not the medium.
+
 **Approvals are not an exception to the read plane.** They are the most
 tempting place to breach it — a human approving from the surface they are
 already reading is obviously valuable, and signing a 42041 verdict looks like
@@ -285,6 +415,10 @@ display; it is the acting, not the seeing, that is withheld.
 | Review approvals | the queue: 42040 pending, 42041 verdicts | the verdict (a radio reply) |
 | Query own history | owned fully — this *is* the capability | — |
 
+The "commission trees" row is the one that moves at v2: the commission itself
+(§5.3) is evergreen's, the spawn stays Fractal's permanently. The v1/v2 line
+runs *through* that capability, not around it.
+
 The generated context surface is a composite: a human-authored preamble
 (mission, phase, non-negotiables, governance mode, pointers) plus a generated
 situational block derived from queries. That is what the handrolled prototype
@@ -294,9 +428,10 @@ v1 holds no local index — it reconstructs from the relay and Fractal's SQLite
 on demand, extending the relay-as-cursor (bridge) and relay-as-registry
 (registry) precedents to **relay-as-context** (§6.2). Out of scope for v1, so
 it is not silently dropped: node-spawn API, radio-send UI, live-edit UI,
-signal API, consent-grant queries (§4 mechanics remain open, §8), and any
-wire-visible decision-log kind — the decision log stays a section of this
-manifest.
+signal API, and any wire-visible decision-log kind — the decision log stays a
+section of this manifest. The commission path (§5.3) and grant queries (§4)
+are **v2**, not v1: v1's kind set is closed at the nine below, and 42070 /
+42080 / 42081 are allocated but unbuilt.
 
 **The read surface spans all nine published kinds**, current status included:
 42010 lifecycle, 42020 accounting, 42030 digests, 42040/42041 approvals,
@@ -353,6 +488,106 @@ in particular must never read the compact summary body: the harness writes the
 summary text into the transcript, and 42060 carries only its hash. This
 extends the adapter's original usage-fields-only boundary; the prohibition
 that matters — no conversational content — is unchanged.
+
+### 5.3 Commissioning, intake, and the requester front door
+
+Everything in this subsection is **evergreen v2**. v1 (§5.1) remains the read
+plane with no write path of any kind, and its kind set stays closed at nine;
+nothing here loosens that. What follows is the design v2 builds to, decided
+now because the v1 contract is being written against it.
+
+**Commissioning is a composite capability, and most of it is not Fractal's.**
+What an operator actually does to commission a node is not `fractal node
+init`. It is: resolve the current template version from the registry; generate
+the contract and commit it for a pin; price the caps; author the runtime seed
+citing that pin; pin the review model; route to the architect for countersign;
+apply the returned conditions; write the numbered work order. That composite
+spans registry, governance, and Fractal, and Fractal cannot perform it. Left
+manual it has three costs: the instance→template-version linkage is a line
+someone types rather than a fact created by construction; commissioning leaves
+no trace in the signed log, which is why the analytics have a hole exactly
+where the operator stands; and if the normal usage pattern requires dropping
+to the Fractal CLI, the control surface is a dashboard.
+
+**The composite is in scope; the spawn is not.** The seam is exact:
+
+- **In scope — the commission.** Everything up to and including the work
+  order, published as a **kind 42070 commission** event: a signed, complete,
+  executable specification naming the template version and pin, the priced
+  caps, the countersigning architect and its conditions, and the authorizing
+  grant (§4).
+- **Out of scope — the spawn.** `fractal node init` stays the operator's, run
+  through Fractal's own CLI. Wrapping it would be the orchestration layer
+  §6.3 bars, and the §5.1 table already says so.
+- **The linkage, obtained without touching the spawn.** The instance's 42010
+  lifecycle event carries a `commission` reference. Bridge already emits
+  42010, so instance→commission→template-version becomes a fact created by
+  construction — which is what the manual line was failing to guarantee.
+
+**Which record is authoritative — the question that killed approvals — does
+not arise here.** Fractal's registry records what *runs*; the commission
+records what was *authorized*. Those are different propositions, so they
+cannot contradict each other, and where they differ the difference is a
+finding with a reader — an instance running outside its commission is
+precisely the governance signal this platform exists to surface — rather than
+a silent divergence with no one to adjudicate it. Stated generally, this is
+§6.5's competing-assertion rule, and it is also why the approvals deferral is
+unaffected: **authorization-without-execution is a coherent state;
+approval-without-release is not.** A commission never spawned is an
+authorization not yet used, which reads true. A verdict that never released
+the gate is a record claiming work was approved while the work sits blocked.
+
+**Intake belongs to evergreen, not to a second node.** Evergreen receives
+external work requests, verifies them against downstream template
+preconditions, converses with the requester about missing requirements, and
+produces a validated commission. It was tempting to separate this — one node
+holding the owner's full context while talking to outsiders looks like a §6.1
+hazard — but the separation is worse on its own terms. The boundary would be
+illusory: a node that validates requirements against template preconditions
+*and* prices them needs capability, budget, and priority context, which is
+owner context, so separation yields two partially-informed nodes and a
+synchronization problem rather than isolation. And the structural gate already
+exists at the right layer — channel membership (§1) — so node separation would
+be a second mechanism for what the channel already does. Two persistent
+identities per human is also the exact fragmentation evergreen exists to end.
+
+The discipline is **read broadly, write narrowly**, and it is structural
+rather than behavioral: evergreen queries its own subgraph privately, and
+**every outbound surface to non-owners is built from log-derived fields
+only** — the same rule §5.1 already binds the generated context surface with,
+for the same reason. A surface that can carry no more than the events do
+cannot over-share by mistake.
+
+**The mention front door.** A person in Buzz who wants work done has no path
+today and will never open a terminal; a Buzz mention of an agent's npub
+becomes a radio message to that human's evergreen node, carrying a reference
+to the source event. This is an inbound cross-post, not an operator wrapper:
+it duplicates no existing path, and the two records assert different things —
+the Buzz message is the origin, the radio message the effect, the link
+explicit — which is the distinction from approvals, where a signed verdict and
+Fractal's gate state would assert the same proposition. Four conditions bind
+it:
+
+1. **Listener, not harness.** We subscribe to channels and filter for
+   mentions of our agents' npubs, then translate to radio. Buzz's ACP harness
+   is not adopted; Fractal remains the sole orchestrator.
+2. **Propose, not dispose.** Evergreen never spawns work from a mention. It
+   produces a requirements-complete commission the human approves — which is
+   also what closes the budget question, since no spend moves before that
+   approval: a mention costs a read, not a run. Per-requester allowances
+   bound the read.
+3. **Authorization is channel membership** (§1's only access gate), not the
+   ability to type an `@`.
+4. **Idempotency keys on the source event id.** A commission is an upsert
+   against that key, so a redelivered mention is a no-op, and an edited
+   mention — a new id, since Nostr ids are content-addressed — supersedes
+   rather than duplicates.
+
+**Registration is not mentionability**, which resolves a UX lie without
+narrowing §2's role-level agent mapping: any persistent role may register a
+profile so its identity and track record are visible, but only evergreen
+advertises an intake capability and answers. Registering silent working nodes
+as mentionable agents would promise a reply that never comes.
 
 ## 6. Design principles
 
@@ -425,6 +660,28 @@ that matters — no conversational content — is unchanged.
    for one branch that silently answers with every branch's events is an
    aggregates-up violation, which makes such a defect blocking rather than
    cosmetic.
+
+   **Corollary — a new signed record is safe exactly when Fractal holds no
+   competing assertion of the same proposition.** This is the general form of
+   the objection that barred approvals, and it decides every write-path
+   question the platform has faced without needing a fresh argument each time.
+   Where Fractal already asserts the proposition, a second record can diverge
+   from the one that actually governs execution, and something must reconcile
+   them — a second control path, which §6.3 forbids. Where Fractal asserts
+   nothing, the signed record is the only record and divergence is impossible
+   because there is nothing to diverge from.
+
+   | Path | Fractal's competing assertion | Ruling |
+   |---|---|---|
+   | Approval verdict → gate | gate state: approved or not | barred |
+   | radio-send / signal / kill wrappers | the message, the signal, the kill | barred |
+   | Commission authorization (§5.3) | none — Fractal has no concept of authorization | permitted |
+   | Inbound @mention → radio (§5.3) | none — the mention originates outside Fractal | permitted |
+
+   The test is the *proposition*, not the medium: publishing a signed event is
+   never itself the violation, and wrapping a CLI is never itself decisive.
+   What matters is whether two records can answer the same question
+   differently.
 
    **Shared test doubles may never be more permissive than the strictest
    conformant real implementation.** A mock relay that honors multi-character
@@ -517,13 +774,27 @@ billed at these prices.
   right one, and the recorded default is wrong. Closing this question means
   a checked-in deployment and one endpoint of record, after which live gating
   becomes legitimate.
-- **History-grant mechanics.** The consent model is decided — a signed,
-  revocable, expiring grant event (§4) — but its mechanics are open: kind
-  number and tag schema (Nostr has prior art in NIP-40 expiration and NIP-09
+- **Grant mechanics.** The model is decided — one signed, revocable, expiring
+  grant kind (42080) with a `scope` tag covering history access, management
+  authority, and succession, plus 42081 for revocation (§4). Open: the tag
+  schema (Nostr has prior art in NIP-40 expiration and NIP-09
   deletion/revocation), grant granularity (whole history vs. per-channel vs.
   per-subgraph vs. per-time-range), how extraction pipelines enforce expiry
   and revocation, what revocation means for training runs already in flight,
   and integration with hosted tuning infra (Baseten/Fireworks-type).
+- **What issues an org/seat key, and who holds it.** §1 attests subgraphs to a
+  durable owner key rather than to a person, and §4 moves authority by grant.
+  Neither says how an org key is created, custodied, rotated, or recovered —
+  and a lost org key is worse than a lost personal one, because it strands
+  every capability attested to it. Succession is specified at the grant layer
+  and unspecified at the key layer.
+- **Commission conformance.** §5.3 makes an instance running outside its
+  commission a visible finding, but nothing yet *checks* it. Open: whether
+  the comparison (42070 commission vs. the 42010 the instance actually
+  emitted, vs. Fractal's registry row) runs in the read surface as a query, or
+  whether drift is merely displayable. No enforcement is proposed — Fractal
+  does not read the log — so the question is what the platform asserts about
+  drift it can see, and how loudly.
 
 ## 9. Decision log
 
@@ -559,3 +830,11 @@ billed at these prices.
 | 2026-07-24 | UI ownership settled (§5.1): a custom human-facing UI is **evergreen v2**, not a new ply node — one generator with several rendering targets (signed log → query surface → {markdown context surface, UI, optionally NIP-AO frames}). Per the approvals ruling above, that UI is read-only. | root (directive 40AF5961, question c) | **Approve**, and — reversing the deferral recorded two rows above — ruled **without** the verification it was held for. Held pending `main.platform_architect.buzz_render` on the belief that it hinged on whether the Buzz client can render a tree; on re-reading it does not. The question is **who holds commit rights over the query surface**, and a new node would need write access to the surface `evergreen` already owns — a governance regression regardless of Buzz's capabilities, and the same directory-granular scope hazard the evergreen commissioning review (verdict 06832636, deviation (a)) upheld. A rendering target is not an ownership boundary. |
 | 2026-07-24 | NIP-AO ranked **second and optional** behind the UI, and owned by `bridge` rather than `evergreen` (derived outward publishing is bridge's half); frames may never carry record. | root (directive 40AF5961, question f) | **Approve-with-substitution of grounds.** Also released without the pending verification, and for a stronger reason: NIP-AO frames are **ephemeral by spec**, so §6.2 disqualifies them as a carrier of record *before* any question of what Buzz can render arises. The layering argument the directive offered is therefore not needed — were Buzz to render graphs perfectly tomorrow, NIP-AO would still not be the record. |
 | 2026-07-24 | **Negative existence claims are not load-bearing evidence** (§6.5 corollary): a design decision rests on what a component *must* do — spec, schema, governance — never on what an investigator failed to find. "No extension surface exists" is a premise, not a finding. Where such a claim is the only support for a decision, either re-ground the decision on positive constraints or record it as open. | architect standing rule; arising from `main.platform_architect.buzz_render` (exited on budget, claim unresolved) | **Adopted.** The verification spawned to test the claim "the Buzz desktop client structurally cannot render a tree" exhausted $4.03 and closed nothing — but it did move the claim's framing twice (a *second* frontend kind gate `CHANNEL_TIMELINE_CONTENT_KINDS` distinct from the backend `TIMELINE_KINDS`; a real feature-flag system, so "only compiled, never configurable" is undercut), which is the pattern: unfalsifiable premises erode without ever resolving. The operational lesson is cheaper than the rule — **check what a held question actually rests on before funding the work to answer it**: both questions above were released on grounds independent of the premise, so the second child that would have chased it was never spawned. Same failure family as the three corrections already logged, all of them claims about *absence* asserted without measurement. Aggregate and the six open axes in `docs/research/buzz-render/`, recorded as OPEN. |
+| 2026-07-24 | **The competing-assertion rule** (§6.5 corollary): a new signed record is safe exactly when Fractal holds no competing assertion of the same proposition. Where Fractal already asserts it, a second record can diverge from the one that governs execution and something must reconcile them (§6.3); where Fractal asserts nothing, the signed record is the only record. The test is the *proposition*, not the medium. | root (directives 35718844, 2A25343E); architect generalization | **Adopted**, and it is the general form of the objection that barred approvals — extracted because the same argument was about to be re-litigated case by case. It settles four questions at once and, importantly, does not settle them all the same way: approvals and the radio/signal/kill wrappers stay **barred** (Fractal asserts gate state, the message, the signal, the kill); commission authorization and inbound @mention are **permitted** (Fractal asserts nothing about authorization, and nothing about an event that originated outside it). Two corollaries the prior wording obscured: publishing a signed event is never itself the violation, and "it wraps a CLI" is never itself decisive. |
+| 2026-07-24 | Identity × version policy (§2): identity is **role-scoped**, one npub per role persisting across runs and template revisions; version **adoption is explicit and event-recorded**, never automatic on publish; **revision keeps the identity, forking mints a new one**, with 42050's inherit `e`-tag recording design ancestry and never reputation; **trust is version-scoped** while identity is role-scoped. Key-role separation confirmed: templates signed by their human author, nodes by their own keypairs attested per NIP-OA. | root (directive 35718844, item 1) | **Approve (a)–(d) as proposed; (e) approve-with-condition.** The four core clauses are mutually reinforcing and were ruled together with the revocation defect below, because one decides *when* a new identity is minted and the other decides *what* identity hangs off — approving them in separate passes risks a role-scoped identity that does not compose with an org-scoped attestation. On (e), a kind-10100 profile advertising the current version is approved only as a **derived pointer**: it carries resolvable coordinates (`a` tag to the 38150 pointer plus the adopted 42050 id), never a transcribed version string, because a restated version goes stale silently — the identical failure §3 already records against the restated tier table — and 10100 is replaceable, so where it disagrees with the adoption chain the chain wins. The root's assumption about tonight's three 42050 events is **confirmed correct**: a template version is human-authored work product, so the owner key is the right signer. §2 gains the definition these clauses jointly produce — a **capability** is template + role identity + version-scoped track record. |
+| 2026-07-24 | §1 revocation **defect** corrected: subgraphs are attested to a **durable org or seat key**, not to an individual. A human's evergreen node holds a revocable grant of management authority; succession revokes the departing human's grants and issues equivalents to the successor, optionally with read access to prior history; the evergreen node itself — preferences, standing context, filters — is non-transferable. | root (supplement 2A25343E, item 1) | **Accepted as a defect, not a preference**, and clauses (a)–(d) approved as proposed. The prior wording ("revoking the human revokes the subgraph") is coherent for a personal tree and destroys org capital on every departure: a capability's template lineage, track record, and eval history belong to the organization, not to whoever currently runs it. **The strongest argument for (a) is one the request did not make:** NIP-OA has *no revocation primitive at all* — its conditions grammar admits only `kind=` and `created_at` bounds, and the draft states attestations are never revoked, only superseded. Person-attestation would therefore require reissuing every attestation in a subgraph on every departure, with no clean mechanism to do it; under a durable owner key the attestation never changes on succession and only grants move, so NIP-OA's weakest property stops mattering. On (f), the request's premise is **half wrong and was verified rather than accepted**: NIP-OA's owner field is a *pubkey* and the draft nowhere requires it name a person, so an org key substitutes with **no new kind and no spec change**. What genuinely needs its own kind is the *grant* — which is the §4 primitive already owed, core-layer and ours, not a NIP-OA replacement. |
+| 2026-07-24 | Grants unified (§4): **one kind, three uses** — history access for training, management authority over subgraphs, and succession — as kind **42080** with a `scope` tag, revoked by append-only **42081**. §8's history-grant question generalized to grant mechanics; two new open questions recorded (org/seat key custody; commission conformance). | root (supplement 2A25343E, item 1(e)) | **Approve, with the offered ground rejected and replaced.** The request argued that one primitive serving three jobs is evidence the abstraction is right; it is not — reuse is evidence of economy, and a shared *shape* proves nothing. The test applied instead is shared **revocation semantics**, which the three uses pass: the revoker is the grantor in every case (the grantor's identity varies because the resource varies — a field, not a difference in meaning); the blast radius is forward-only in every case (revoked history access stops future extraction while already-extracted rows stand labeled per §4; revoked management authority stops future commissioning while a running node's immutable seed carries its run out); expiry is identical. Had the revoker differed — one grant revocable by someone other than its issuer — they would be distinct kinds however alike they looked. Revocation is a **separate append-only event** rather than a replaceable update, because a replaced grant would clobber the evidence that authority once existed. Recorded honestly: nothing enforces a management grant today, since Fractal does not read the log, so a grant is a governance fact of decision-log standing until commissioning gives it a consumer. |
+| 2026-07-24 | Commissioning (new §5.3): **commission-from-registered-template is in scope; the spawn is not.** Everything through the numbered work order — registry version resolution, contract generation and pin, priced caps, seed authorship, architect countersign, applied conditions — publishes as a **kind 42070 commission** event; `fractal node init` stays operator-run via Fractal's CLI. The instance's 42010 carries a `commission` reference, making instance→template-version a fact created by construction. §5.1's read/write split is reframed: it governs the **Fractal control plane, not the log**. | root (directive 35718844, item 2) | **Approve-with-conditions**, reopening the read-plane ruling on the narrow grounds requested. The composition-vs-wrapping argument is **accepted**: most of the commissioning composite is not a Fractal capability, Fractal cannot perform it, and leaving it manual costs three specific things — a hand-typed version linkage, an analytics hole exactly where the operator stands, and a control surface that is really a dashboard. But the composite still *contains* the spawn, so it is split at that seam rather than approved whole. On the authority tension the root flagged and declined to assume away: the registry records what **runs**, the commission records what was **authorized** — different propositions, so they cannot contradict, and where they differ the difference is a *finding with a reader* (an instance running outside its commission) rather than a silent divergence, which is precisely what approvals lacked. The approvals deferral is therefore **unchanged and better grounded**: authorization-without-execution is a coherent state, approval-without-release is a record that lies. Conditions: 42070 names the authorizing grant (§4); v1's kind set stays closed at nine, with 42070/42080/42081 allocated but unbuilt; `core` re-runs the block/buzz collision check before writing the registry entries. |
+| 2026-07-24 | Evergreen **absorbs intake** (§5.3): one persistent identity per human. Evergreen receives external requests, validates them against template preconditions, converses with requesters, and produces a commission the human approves. | root (supplement 2A25343E, item 2) | **Approve the merge**, reversing the architect's earlier §6.1 objection. The root asked for the strongest form of the separation case — that a structural boundary beats a behavioral discipline — and it is made and then defeated on two counts. The boundary is **illusory**: a node that validates requirements against template preconditions *and* prices them needs capability, budget, and priority context, i.e. owner context, so separation yields two partially-informed nodes plus a synchronization problem rather than isolation. And the structural gate **already exists at the right layer** — channel membership (§1) — so node separation would be a second mechanism for what the channel does. Condition, which converts the root's "read broadly, write narrowly" from a behavior into structure: evergreen's outbound surface to non-owners is built from **log-derived fields only**, the identical rule §5.1 already binds the generated context surface with. A surface that can carry no more than the events do cannot over-share by mistake. |
+| 2026-07-24 | Inbound **@mention front door** (§5.3): a Buzz mention of an agent npub becomes a radio message to that human's evergreen node, carrying a reference to the source event. Four binding conditions: listener-not-harness; propose-not-dispose; authorization by channel membership; idempotency keyed on the source event id. Registration ≠ mentionability. | root (supplement 2A25343E, item 3) | **Veto lifted — approve-with-conditions.** The crux the request named is (b), and it **holds**: the mention and the radio message assert different things — origin and effect, with the link explicit — where a signed approval verdict and Fractal's gate state would assert the same proposition. Confirmed by the competing-assertion rule logged above rather than by analogy. (a) is also accepted on its own terms: this creates the only path that exists for requesters who will never open a terminal, which is new capability, not a duplicate operator path. The (f) items are **specified rather than deferred**, and one dissolves — the root listed budget as a hole, but their own propose-not-dispose clause closes it, since no spend moves before the human approves a commission, so a mention costs a read and not a run; per-requester allowances bound the read. Idempotency keys on the source event id as an upsert, so redelivery is a no-op and an edited mention (new content-addressed id) supersedes rather than double-commissions. **Registration is separated from mentionability**, which resolves the UX lie the root flagged without narrowing the role-level agent mapping: any persistent role may register a profile, but only evergreen advertises intake and answers. |
+| 2026-07-24 | Vocabulary fixed (§0): **Fractal** = the platform; **tree/subgraph** = a running instance; **capability** = the durable asset (template + role identity + version-scoped track record). "Fractal" retired from the third sense. Persistent node ↔ Buzz agent mapping recorded at **role** level (§2); ephemeral workers map to nothing. | root (supplement 2A25343E, fold-ins i and ii) | **Approve.** The third sense had no word and was borrowing "fractal", which made §1's revocation rule, §2's identity scoping, and §4's grants ambiguous between a capability and a run — they read as nonsense applied to a run, so this is a correctness fix for a governing document, not style. The term did not need inventing: **capability** is exactly what the identity ruling above defines, so the vocabulary falls out of the rulings rather than being layered on. Fold-in (i) is the same statement seen from the other end — role-scoped identity *is* role-level agent mapping — and the observation that Buzz's flat agent model cannot represent a subgraph's internals is recorded as §6.1 holding accidentally, which is worth knowing but is not load-bearing for anything. |
