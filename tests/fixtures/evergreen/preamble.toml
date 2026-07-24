@@ -1,0 +1,12 @@
+mission = "Build Lindenmayer -- a control plane for governing Fractal agent subgraphs through Buzz."
+phase = "bootstrap"
+governance_mode = "veto"
+non_negotiables = [
+    "Never patch or fork Fractal; integrate only through its extension surfaces.",
+    "Aggregates flow up, details stay in the subgraph.",
+    "No new storage systems: the signed event log is the history.",
+]
+pointers = [
+    "docs/DESIGN.md",
+    "tree/root/CONTEXT.md",
+]
