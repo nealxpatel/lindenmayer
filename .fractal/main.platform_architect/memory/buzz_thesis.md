@@ -56,54 +56,41 @@ concrete payoff of the standing rule from the compaction episode.
 the mock is NIP-01-faithful; that faithfulness is exactly why no test caught
 the bug. The reporter tried loosening the mock and correctly reverted.
 
-## Held pending `buzz_render`
+## (c) and (f) — ruled without the verification they were held for
 
-**(c) UI ownership and (f) NIP-AO priority.** Both hinge on a *negative
-existence* claim — "no extension surface exists; the Buzz client structurally
-cannot render a tree" — produced by the node that authored the proposal, which
-already retracted one materially wrong claim of this class mid-thread
-(canvas-is-the-only-rich-surface, then found kind 24200). Negative existence
-claims are premises, not findings.
+Both were held pending `buzz_render` on the belief that they hinged on a
+*negative existence* claim: "no extension surface exists; the Buzz client
+structurally cannot render a tree." They did not. Released on premise-independent
+grounds, and both are now decision-log rows.
 
-Provisional positions, sent to root so it can move at its own risk:
+- **(c) evergreen v2, not a new ply node.** The question is who holds commit
+  rights over the query surface, not what the render target looks like. A new
+  node would need write access to the surface evergreen owns — the same
+  directory-granular scope hazard upheld in the evergreen commissioning review
+  (verdict `06832636`, deviation (a)).
+- **(f) NIP-AO second and optional, owned by bridge.** Frames are **ephemeral
+  by spec**, so §6.2 disqualifies them as a carrier of record before the
+  rendering question arises. The layering argument was never needed.
 
-- **(c) evergreen v2, not a new ply node.** One generator, several rendering
-  targets: signed log → query surface → {markdown context surface, UI,
-  optionally NIP-AO frames}. A new node would need commit rights over the same
-  query surface — worse governance.
-- **(f) NIP-AO is Buzz-layer**, and carries a second disqualifier the root did
-  not cite: frames are **ephemeral by spec**, so §6.2 rules them out as a
-  carrier of record before the layering argument runs. Ranking: UI first,
-  NIP-AO second and optional, owned by **bridge** (derived outward publishing
-  is bridge's half) rather than evergreen.
+`buzz_render` exited on budget ($4.03/$4.00) with the claim unresolved. It was
+**not** continued — a useful continuation needed ~$4 against ~$2 held — and the
+findings were absorbed instead. Its own memory sits under `.fractal/`, which
+merge-up strips, so the synthesis into `docs/research/buzz-render/` is the only
+copy that survives; the six open axes are recorded there as OPEN.
 
-Flip condition: if `buzz_render` finds a real rendering path for a tree/graph,
-(f) rises and the UI charter narrows to what Buzz still cannot do.
+**The standing rule this produced** (now a §6.5 corollary): a negative existence
+claim is not load-bearing evidence. Decisions rest on what a component *must* do
+— spec, schema, governance — never on what an investigator failed to find. The
+operational half is cheaper than the rule: **check what a held question actually
+rests on before funding the work to answer it.** Doing that here avoided a second
+child entirely.
 
-### What the verification has already established
-
-**block/buzz ships FOUR clients, not one** — desktop, web, mobile, admin-web.
-Every citation offered in support of the claim was **desktop-only**, while the
-claim was being used to justify a founding-thesis change. The enumeration gap
-was real, which is the answer to whether the spawn was justified.
-
-- `web/` is a git-repo browser, not a chat client (its `RepoTreeSection.tsx` is
-  a false friend). `admin-web/` is a bare admin panel. Neither is a lead.
-- `mobile/` is a separate Flutter chat client with a **mobile-only "pulse"
-  surface** (`agent_activity_card.dart`) that has no desktop equivalent — a
-  flat, Twitter-like grouped feed of agent posts. Same flat-not-tree limit as
-  desktop's 24200 panel, so **not yet a refutation**, but the claim as stated
-  needs its desktop-only scope made explicit.
-- No `mermaid`/`d3`/`dagre`/`cytoscape`/`reactflow`/`graphviz`/`plantuml` in
-  any of the three JS clients' `package.json` (mobile `pubspec.yaml`
-  unchecked) — a real but scoped negative against the escape hatch of
-  rendering a diagram through markdown.
-
-The decisive open question, and the one to rule on: **can an agent, unattended,
-get a rendered graph in front of a human?** Not "does a PNG render" — whether
-any upload path is reachable from the SDK or an agent key with no human
-file-picker step. If not, the image escape hatch is closed in practice however
-well PNGs render.
+What the verification did establish, all of it *correcting* the framing rather
+than refuting the claim: block/buzz ships **four** clients (every citation for
+the claim was desktop-only); there are **two** kind gates, not one (frontend
+`CHANNEL_TIMELINE_CONTENT_KINDS` vs backend `TIMELINE_KINDS`); and a real
+feature-flag system exists, so "only compiled, never configurable" is undercut.
+Supporting the claim: no diagram library in any of the three JS clients.
 
 ## Messages of record
 
