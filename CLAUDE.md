@@ -3,14 +3,17 @@
 This project is called **Lindenmayer**.
 
 Lindenmayer is a control plane that lets humans govern subgraphs of Fractal agent
-trees (plasma-ai/fractal) through Buzz (block/buzz), Block's Nostr-based workspace —
-turning agent work into a versioned, evaluated, human-owned workforce. Fractal and
-Buzz are external platforms this repo integrates; their code does not live here.
+trees (plasma-ai/fractal) through **Nostr** — a signed, portable event log any
+compliant relay can carry and any compliant client can read — turning agent work
+into a versioned, evaluated, human-owned workforce. Buzz (block/buzz), Block's
+Nostr-based workspace, is the reference human surface and portability proof: one
+consumer among possible others, never the record. Fractal and Buzz are external
+platforms this repo integrates; their code does not live here.
 
 Lindenmayer is a Python host application built on Fractal's extension surfaces
 (observability hooks, SQLite/CLI read surfaces, radio/signal steering). It never
 patches or forks Fractal, and it adds no capabilities to Fractal nodes — it makes
-existing Fractal primitives durable, identified, and observable through Buzz.
+existing Fractal primitives durable, identified, and observable on the signed log.
 
 True to the name, Lindenmayer's development is managed by a Fractal tree. The tree
 doubles as the project's first user: the demo observes the tree that builds it, and
